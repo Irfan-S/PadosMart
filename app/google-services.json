@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "926144366236",
+    "firebase_url": "https://espl-padosmart.firebaseio.com",
+    "project_id": "espl-padosmart",
+    "storage_bucket": "espl-padosmart.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926144366236:android:a5a1888fa2bca32aac4f59",
+        "android_client_info": {
+          "package_name": "espl.apps.padosmart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "926144366236-t3ke3f5cf6l0olb919l85e8qu94g64es.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "espl.apps.padosmart",
+            "certificate_hash": "ce332e4cc29b3500486b06cde05509cd549a1533"
+          }
+        },
+        {
+          "client_id": "926144366236-64qc0d7010knkmq19f0qqvemv0tck22s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLTi28PM98Rmmc2TniJvNulZ2a9YgdT4o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "926144366236-64qc0d7010knkmq19f0qqvemv0tck22s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
