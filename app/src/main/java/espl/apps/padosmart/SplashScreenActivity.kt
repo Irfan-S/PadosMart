@@ -8,55 +8,71 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import espl.apps.padosmart.bases.DeliveryUserBase
 import espl.apps.padosmart.bases.EndUserBase
-import espl.apps.padosmart.bases.ShopUserBase
+import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
 
-class SplashScreen : AppCompatActivity() {
+class SplashScreenActivity : AppCompatActivity() {
 
-    private val TAG = "SplashScreenPlicly"
-    private val authRepository = AuthRepository()
+    private val TAG = "SplashScreen"
+
 
     var intentLogin: Intent? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Firebase.database.setPersistenceEnabled(true)
+        val authRepository = AuthRepository(applicationContext)
+
+        intentLogin = Intent(applicationContext, Login::class.java)
+        val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
+            override fun onTick(millisecondsUntilDone: Long) {
+
+                //countdown is counting(every second)
+            }
+
+            override fun onFinish() {
+                Log.d(TAG, "Cached sign-in not found, asking for fresh sign-in..")
+                startActivity(intentLogin)
+                finish()
+            }
+        }
+
         val currentUser = authRepository.getFirebaseUser()
 
         if (currentUser != null) {
             var intent: Intent? = null
-            val authResponse =
-                authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
-                    override fun onAuthCallback(response: Int) {
-                        Log.d(TAG, "User data fetched")
-                        when (response) {
-                            authRepository.END_USER -> {
-                                Log.d(TAG, "User type: END_USER")
-                                intent = Intent(applicationContext, EndUserBase::class.java)
-                            }
-                            authRepository.DELIVERY_USER -> {
-                                Log.d(TAG, "User type: DELIVERY_USER")
-                                intent = Intent(applicationContext, DeliveryUserBase::class.java)
-                            }
-                            authRepository.SHOP_USER -> {
-                                Log.d(TAG, "User type: SHOP_USER")
-                                intent = Intent(applicationContext, ShopUserBase::class.java)
-                            }
+            authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
+                override fun onAuthCallback(response: Long) {
+                    Log.d(TAG, "User data fetched with response: $response")
+                    when (response) {
+                        authRepository.END_USER.toLong() -> {
+                            Log.d(TAG, "User type: END_USER")
+                            intent = Intent(applicationContext, EndUserBase::class.java)
+                            startActivity(intent)
+                            finish()
                         }
-
+                        authRepository.SHOP_USER.toLong() -> {
+                            Log.d(TAG, "User type: SHOP_USER")
+                            intent = Intent(applicationContext, ShopBase::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                        authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                            Snackbar.make(
+                                findViewById(R.id.content), "Unable to sign you in",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                        else -> {
+                            countDownTimer.start()
+                        }
                     }
 
-                })
-            if (authResponse == authRepository.AUTH_ACCESS_SUCCESSFUL) {
-                startActivity(intent)
-                finish()
-            } else {
-                Snackbar.make(
-                    findViewById(R.id.content), "Unable to sign you in",
-                    Snackbar.LENGTH_LONG
-                ).show()
-            }
+                }
+
+            })
+
         } else {
 
 //        // Manually subscribing to topic as some users do not get subscribed automatically.
@@ -69,21 +85,6 @@ class SplashScreen : AppCompatActivity() {
 //                Log.d(TAG, msg)
 //            })
 
-            Firebase.database.setPersistenceEnabled(true)
-            intentLogin = Intent(applicationContext, Login::class.java)
-            val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
-                override fun onTick(millisecondsUntilDone: Long) {
-
-                    //countdown is counting(every second)
-                }
-
-                override fun onFinish() {
-                    Log.d(TAG, "Cached sign-in not found, asking for fresh sign-in..")
-                    startActivity(intentLogin)
-                    finish()
-
-                }
-            }
             countDownTimer.start()
         }
     }

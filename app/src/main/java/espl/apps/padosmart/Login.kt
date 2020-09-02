@@ -11,16 +11,12 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
+import com.google.firebase.auth.*
 import com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
 import com.google.firebase.auth.PhoneAuthProvider.OnVerificationStateChangedCallbacks
-import espl.apps.padosmart.bases.DeliveryUserBase
 import espl.apps.padosmart.bases.EndUserBase
-import espl.apps.padosmart.bases.NewUserBase
-import espl.apps.padosmart.bases.ShopUserBase
+import espl.apps.padosmart.bases.ShopBase
+import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import kotlinx.android.synthetic.main.activity_login.*
 import java.util.concurrent.TimeUnit
@@ -29,10 +25,10 @@ import java.util.concurrent.TimeUnit
 class Login : AppCompatActivity(), View.OnClickListener {
 
     //Core data repo
-    val authRepository = AuthRepository()
+    lateinit var authRepository: AuthRepository
 
     // [START declare_auth]
-    private var mAuth = authRepository.getFirebaseAuthReference()
+    lateinit var mAuth: FirebaseAuth
 
     // Declaring all views
     lateinit var buttonStartVerification: Button
@@ -40,6 +36,8 @@ class Login : AppCompatActivity(), View.OnClickListener {
     lateinit var buttonResend: Button
     lateinit var fieldPhoneNumber: EditText
     lateinit var fieldVerificationCode: EditText
+
+    private var phoneNumber: String? = null
 
     private var mVerificationInProgress = false
     private var mVerificationId: String? = null
@@ -50,6 +48,8 @@ class Login : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        authRepository = AuthRepository(applicationContext)
+        mAuth = authRepository.getFirebaseAuthReference()
         // Restore instance state
         savedInstanceState?.let { onRestoreInstanceState(it) }
 
@@ -62,6 +62,10 @@ class Login : AppCompatActivity(), View.OnClickListener {
         buttonStartVerification.setOnClickListener(this)
         buttonVerifyPhone.setOnClickListener(this)
         buttonResend.setOnClickListener(this)
+
+        //Assign field entries
+        fieldPhoneNumber = findViewById(R.id.fieldPhoneNumber)
+        fieldVerificationCode = findViewById(R.id.fieldVerificationCode)
 
 
         // Initialize phone auth callbacks
@@ -180,6 +184,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
         // [START verify_with_code]
         val credential = PhoneAuthProvider.getCredential(verificationId!!, code)
         // [END verify_with_code]
+
         signInWithPhoneAuthCredential(credential)
     }
 
@@ -210,42 +215,42 @@ class Login : AppCompatActivity(), View.OnClickListener {
                     Log.d(TAG, "signInWithCredential:success")
 
                     authRepository.setFirebaseUser(task.result!!.user!!)
-                    val authResponse = authRepository.getFirebaseUserType(object :
-                        AuthRepository.AuthDataInterface {
-                        override fun onAuthCallback(response: Int) {
-                            Log.d(TAG, "User data fetched")
+                    authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
+                        override fun onAuthCallback(response: Long) {
+                            Log.d(TAG, "User data fetched with response: $response")
                             when (response) {
-                                authRepository.END_USER -> {
+                                authRepository.END_USER.toLong() -> {
                                     Log.d(TAG, "User type: END_USER")
                                     intent = Intent(applicationContext, EndUserBase::class.java)
+                                    startActivity(intent)
+                                    finish()
                                 }
-                                authRepository.DELIVERY_USER -> {
-                                    Log.d(TAG, "User type: DELIVERY_USER")
-                                    intent =
-                                        Intent(applicationContext, DeliveryUserBase::class.java)
-                                }
-                                authRepository.SHOP_USER -> {
+                                authRepository.SHOP_USER.toLong() -> {
                                     Log.d(TAG, "User type: SHOP_USER")
-                                    intent = Intent(applicationContext, ShopUserBase::class.java)
+                                    intent = Intent(applicationContext, ShopBase::class.java)
+                                    startActivity(intent)
+                                    finish()
                                 }
-                                authRepository.NEW_USER -> {
+                                authRepository.NEW_USER.toLong() -> {
                                     Log.d(TAG, "User type: NEW_USER")
-                                    intent = Intent(applicationContext, NewUserBase::class.java)
+                                    intent = Intent(applicationContext, SignupActivity::class.java)
+                                    val userData = UserDataModel(phone = phoneNumber)
+                                    intent.putExtra(getString(R.string.userDataParcel), userData)
+                                    startActivity(intent)
+                                    authRepository.createEndUserAuthObject()
+                                    finish()
+                                }
+                                authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                                    Snackbar.make(
+                                        findViewById(R.id.content), "Unable to sign you in",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
                                 }
                             }
 
                         }
 
                     })
-                    if (authResponse == authRepository.AUTH_ACCESS_SUCCESSFUL) {
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        Snackbar.make(
-                            findViewById(R.id.content), "Unable to sign you in",
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
 
                 } else {
                     // Sign in failed, display a message and update the UI
@@ -312,7 +317,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun validatePhoneNumber(): Boolean {
-        val phoneNumber: String = fieldPhoneNumber.text.toString()
+        phoneNumber = fieldPhoneNumber.text.toString()
         if (TextUtils.isEmpty(phoneNumber)) {
             fieldPhoneNumber.error = "Invalid phone number."
             return false
