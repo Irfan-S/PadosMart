@@ -41,37 +41,42 @@ class SplashScreenActivity : AppCompatActivity() {
         val currentUser = authRepository.getFirebaseUser()
 
         if (currentUser != null) {
-            var intent: Intent? = null
-            authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
-                override fun onAuthCallback(response: Long) {
-                    Log.d(TAG, "User data fetched with response: $response")
-                    when (response) {
-                        authRepository.END_USER.toLong() -> {
-                            Log.d(TAG, "User type: END_USER")
-                            intent = Intent(applicationContext, EndUserBase::class.java)
-                            startActivity(intent)
-                            finish()
+
+            if (currentUser.isEmailVerified) {
+                var intent: Intent? = null
+                authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
+                    override fun onAuthCallback(response: Long) {
+                        Log.d(TAG, "User data fetched with response: $response")
+                        when (response) {
+                            authRepository.END_USER.toLong() -> {
+                                Log.d(TAG, "User type: END_USER")
+                                intent = Intent(applicationContext, EndUserBase::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            authRepository.SHOP_USER.toLong() -> {
+                                Log.d(TAG, "User type: SHOP_USER")
+                                intent = Intent(applicationContext, ShopBase::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                            authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                                Snackbar.make(
+                                    findViewById(android.R.id.content), "Unable to sign you in",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
+                            }
+                            else -> {
+                                countDownTimer.start()
+                            }
                         }
-                        authRepository.SHOP_USER.toLong() -> {
-                            Log.d(TAG, "User type: SHOP_USER")
-                            intent = Intent(applicationContext, ShopBase::class.java)
-                            startActivity(intent)
-                            finish()
-                        }
-                        authRepository.AUTH_ACCESS_FAILED.toLong() -> {
-                            Snackbar.make(
-                                findViewById(R.id.content), "Unable to sign you in",
-                                Snackbar.LENGTH_LONG
-                            ).show()
-                        }
-                        else -> {
-                            countDownTimer.start()
-                        }
+
                     }
 
-                }
-
-            })
+                })
+            } else {
+                countDownTimer.start()
+            }
 
         } else {
 

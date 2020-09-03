@@ -97,6 +97,7 @@ class AuthRepository(context: Context) {
 
 
     fun getFirebaseUserType(callback: AuthDataInterface) {
+        Log.d(TAG, "Searching database for user.")
         if (user != null) {
             val userTypeListener = object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -104,6 +105,7 @@ class AuthRepository(context: Context) {
                 }
 
                 override fun onDataChange(p0: DataSnapshot) {
+                    Log.d(TAG, "User found with response ${p0.value}")
                     if (p0.value != null) {
                         val response = p0.value as Long
                         callback.onAuthCallback(response)

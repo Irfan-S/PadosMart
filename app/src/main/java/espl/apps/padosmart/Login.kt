@@ -14,6 +14,7 @@ import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.*
 import com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
 import com.google.firebase.auth.PhoneAuthProvider.OnVerificationStateChangedCallbacks
+import com.hbb20.CountryCodePicker
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.models.UserDataModel
@@ -36,6 +37,8 @@ class Login : AppCompatActivity(), View.OnClickListener {
     lateinit var buttonResend: Button
     lateinit var fieldPhoneNumber: EditText
     lateinit var fieldVerificationCode: EditText
+
+    lateinit var countryCodePicker: CountryCodePicker
 
     private var phoneNumber: String? = null
 
@@ -66,6 +69,11 @@ class Login : AppCompatActivity(), View.OnClickListener {
         //Assign field entries
         fieldPhoneNumber = findViewById(R.id.fieldPhoneNumber)
         fieldVerificationCode = findViewById(R.id.fieldVerificationCode)
+
+        countryCodePicker = findViewById(R.id.ccp)
+        countryCodePicker.registerCarrierNumberEditText(fieldPhoneNumber)
+
+        phoneAuthFields.visibility = View.INVISIBLE
 
 
         // Initialize phone auth callbacks
@@ -106,7 +114,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
                     // The SMS quota for the project has been exceeded
                     // [START_EXCLUDE]
                     Snackbar.make(
-                        findViewById(R.id.content), "Quota exceeded.",
+                        findViewById(android.R.id.content), "Quota exceeded.",
                         Snackbar.LENGTH_SHORT
                     ).show()
                     // [END_EXCLUDE]
@@ -218,35 +226,72 @@ class Login : AppCompatActivity(), View.OnClickListener {
                     authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
                         override fun onAuthCallback(response: Long) {
                             Log.d(TAG, "User data fetched with response: $response")
-                            when (response) {
-                                authRepository.END_USER.toLong() -> {
-                                    Log.d(TAG, "User type: END_USER")
-                                    intent = Intent(applicationContext, EndUserBase::class.java)
-                                    startActivity(intent)
-                                    finish()
+                            if (task.result!!.user!!.isEmailVerified) {
+                                Log.d(TAG, "Email verified user logging in")
+                                when (response) {
+                                    authRepository.END_USER.toLong() -> {
+                                        Log.d(TAG, "User type: END_USER")
+                                        intent = Intent(applicationContext, EndUserBase::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                    authRepository.SHOP_USER.toLong() -> {
+                                        Log.d(TAG, "User type: SHOP_USER")
+                                        intent = Intent(applicationContext, ShopBase::class.java)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                    authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                                        Snackbar.make(
+                                            findViewById(android.R.id.content),
+                                            "Unable to sign you in",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                    }
                                 }
-                                authRepository.SHOP_USER.toLong() -> {
-                                    Log.d(TAG, "User type: SHOP_USER")
-                                    intent = Intent(applicationContext, ShopBase::class.java)
-                                    startActivity(intent)
-                                    finish()
-                                }
-                                authRepository.NEW_USER.toLong() -> {
-                                    Log.d(TAG, "User type: NEW_USER")
-                                    intent = Intent(applicationContext, SignupActivity::class.java)
-                                    val userData = UserDataModel(phone = phoneNumber)
-                                    intent.putExtra(getString(R.string.userDataParcel), userData)
-                                    startActivity(intent)
-                                    authRepository.createEndUserAuthObject()
-                                    finish()
-                                }
-                                authRepository.AUTH_ACCESS_FAILED.toLong() -> {
-                                    Snackbar.make(
-                                        findViewById(R.id.content), "Unable to sign you in",
-                                        Snackbar.LENGTH_LONG
-                                    ).show()
+                            } else {
+                                Log.d(TAG, "Email unverified user")
+                                when (response) {
+                                    authRepository.END_USER.toLong() -> {
+                                        Log.d(TAG, "User type: END_USER unverified")
+                                        Snackbar.make(
+                                            findViewById(android.R.id.content),
+                                            "Please verify your email and try again",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                    }
+                                    authRepository.NEW_USER.toLong() -> {
+                                        Log.d(TAG, "User type: NEW_USER")
+                                        intent =
+                                            Intent(applicationContext, SignupActivity::class.java)
+                                        val userData = UserDataModel(phone = phoneNumber)
+                                        intent.putExtra(
+                                            getString(R.string.userDataParcel),
+                                            userData
+                                        )
+                                        startActivity(intent)
+                                        finish()
+                                    }
                                 }
                             }
+//                            when (response) {
+//
+//                                authRepository.NEW_USER.toLong() -> {
+//                                    Log.d(TAG, "User type: NEW_USER")
+//                                    intent = Intent(applicationContext, SignupActivity::class.java)
+//                                    val userData = UserDataModel(phone = phoneNumber)
+//                                    intent.putExtra(getString(R.string.userDataParcel), userData)
+//                                    startActivity(intent)
+//                                    authRepository.createEndUserAuthObject()
+//                                    finish()
+//                                }
+//                                authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+//                                    Snackbar.make(
+//                                        findViewById(R.id.content), "Unable to sign you in",
+//                                        Snackbar.LENGTH_LONG
+//                                    ).show()
+//                                }
+//                            }
 
                         }
 
@@ -286,6 +331,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
         when (uiState) {
             STATE_CODE_SENT -> {
                 // Code sent state, show the verification field, the
+                phoneAuthFields.visibility = View.VISIBLE
                 enableViews(
                     buttonVerifyPhone,
                     buttonResend,
@@ -309,15 +355,11 @@ class Login : AppCompatActivity(), View.OnClickListener {
 
             }
         }
-        if (user == null) {
-            // Signed out
-            phoneAuthFields.visibility = View.VISIBLE
-
-        }
     }
 
     private fun validatePhoneNumber(): Boolean {
-        phoneNumber = fieldPhoneNumber.text.toString()
+        phoneNumber = countryCodePicker.fullNumberWithPlus
+        Log.d(TAG, "Number :$phoneNumber")
         if (TextUtils.isEmpty(phoneNumber)) {
             fieldPhoneNumber.error = "Invalid phone number."
             return false
@@ -343,19 +385,22 @@ class Login : AppCompatActivity(), View.OnClickListener {
                 if (!validatePhoneNumber()) {
                     return
                 }
-                startPhoneNumberVerification(fieldPhoneNumber.text.toString())
+                startPhoneNumberVerification(phoneNumber!!)
             }
             R.id.buttonVerifyPhone -> {
-                val code: String = fieldVerificationCode.text.toString()
+                val code = fieldVerificationCode.text.toString()
                 if (TextUtils.isEmpty(code)) {
                     fieldVerificationCode.error = "Cannot be empty."
                     return
                 }
                 verifyPhoneNumberWithCode(mVerificationId, code)
             }
-            R.id.buttonResend -> resendVerificationCode(
-                fieldPhoneNumber.text.toString(), mResendToken
-            )
+            R.id.buttonResend -> {
+                validatePhoneNumber()
+                resendVerificationCode(
+                    phoneNumber!!, mResendToken
+                )
+            }
         }
     }
 
