@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@id/ordersFragmentUser"
+        android:icon="@android:drawable/ic_dialog_dialer"
+        android:title="Orders" />
+    <item
+        android:id="@id/homeFragmentUser"
+        android:icon="@android:drawable/stat_notify_voicemail"
+        android:title="Home" />
+    <item
+        android:id="@id/updatesFragmentUser"
+        android:icon="?attr/actionModeCutDrawable"
+        android:title="Updates" />
+</menu>

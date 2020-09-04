@@ -1,3 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/nav_graph" />
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragmentUser">
+    <fragment
+        android:id="@+id/homeFragmentUser"
+        android:name="espl.apps.padosmart.fragments.HomeFragmentUser"
+        android:label="HomeFragmentUser"
+        tools:layout="@layout/fragment_home_user" />
+    <fragment
+        android:id="@+id/ordersFragmentUser"
+        android:name="espl.apps.padosmart.fragments.OrdersFragmentUser"
+        android:label="OrdersFragmentUser"
+        tools:layout="@layout/fragment_orders_user" />
+    <fragment
+        android:id="@+id/updatesFragmentUser"
+        android:name="espl.apps.padosmart.fragments.UpdatesFragmentUser"
+        android:label="UpdatesFragmentUser"
+        tools:layout="@layout/fragment_updates_user" />
+</navigation>

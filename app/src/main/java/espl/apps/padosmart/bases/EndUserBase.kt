@@ -1,25 +1,30 @@
 package espl.apps.padosmart.bases
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
-import espl.apps.padosmart.Login
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import espl.apps.padosmart.R
 
 class EndUserBase : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.base_user_activity)
         Log.d("hi", "in end user base")
 
-        val button = findViewById<Button>(R.id.button)
-        button.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            startActivity(Intent(this, Login::class.java))
-            finish()
-        }
+        val host: NavHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment? ?: return
+
+        val navController = host.navController
+        setupBottomNavMenu(navController)
+
+    }
+
+    private fun setupBottomNavMenu(navController: NavController) {
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNav?.setupWithNavController(navController)
     }
 }
