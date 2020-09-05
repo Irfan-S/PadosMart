@@ -6,17 +6,22 @@
     app:startDestination="@id/homeFragmentUser">
     <fragment
         android:id="@+id/homeFragmentUser"
-        android:name="espl.apps.padosmart.fragments.HomeFragmentUser"
+        android:name="espl.apps.padosmart.fragments.enduser.UserHome"
         android:label="HomeFragmentUser"
         tools:layout="@layout/fragment_home_user" />
     <fragment
         android:id="@+id/ordersFragmentUser"
-        android:name="espl.apps.padosmart.fragments.OrdersFragmentUser"
+        android:name="espl.apps.padosmart.fragments.enduser.UserOrders"
         android:label="OrdersFragmentUser"
         tools:layout="@layout/fragment_orders_user" />
     <fragment
         android:id="@+id/updatesFragmentUser"
-        android:name="espl.apps.padosmart.fragments.UpdatesFragmentUser"
+        android:name="espl.apps.padosmart.fragments.enduser.UserUpdates"
         android:label="UpdatesFragmentUser"
         tools:layout="@layout/fragment_updates_user" />
+    <fragment
+        android:id="@+id/profileFragmentUser"
+        android:name="espl.apps.padosmart.fragments.enduser.UserProfile"
+        android:label="ProfileFragmentUser"
+        tools:layout="@layout/fragment_profile_user"/>
 </navigation>

@@ -38,7 +38,7 @@ class SignupActivity : AppCompatActivity(), View.OnClickListener {
 
         authRepository = AuthRepository(applicationContext)
 
-        userData = intent.getParcelableExtra(getString(R.string.userDataParcel))
+        userData = intent.getParcelableExtra(getString(R.string.userDataParcel)) as UserDataModel
 
         userNameField = findViewById(R.id.userNameField)
         userPhoneTextView = findViewById(R.id.userPhoneTextView)

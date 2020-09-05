@@ -320,13 +320,8 @@ class Login : AppCompatActivity(), View.OnClickListener {
     }
 
 
-    private fun updateUI(uiState: Int) {
-        updateUI(uiState, null)
-    }
-
     private fun updateUI(
-        uiState: Int,
-        user: FirebaseUser? = mAuth.currentUser,
+        uiState: Int
     ) {
         when (uiState) {
             STATE_CODE_SENT -> {

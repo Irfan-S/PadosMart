@@ -43,7 +43,6 @@ class SplashScreenActivity : AppCompatActivity() {
         if (currentUser != null) {
 
             if (currentUser.isEmailVerified) {
-                var intent: Intent? = null
                 authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
                     override fun onAuthCallback(response: Long) {
                         Log.d(TAG, "User data fetched with response: $response")
