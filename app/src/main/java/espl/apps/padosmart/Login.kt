@@ -37,6 +37,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
     lateinit var buttonResend: Button
     lateinit var fieldPhoneNumber: EditText
     lateinit var fieldVerificationCode: EditText
+    lateinit var shopSignupButton: Button
 
     lateinit var countryCodePicker: CountryCodePicker
 
@@ -60,8 +61,10 @@ class Login : AppCompatActivity(), View.OnClickListener {
         buttonStartVerification = findViewById<Button>(R.id.buttonStartVerification)
         buttonVerifyPhone = findViewById<Button>(R.id.buttonVerifyPhone)
         buttonResend = findViewById<Button>(R.id.buttonResend)
+        shopSignupButton = findViewById(R.id.buttonShopSignUp)
 
         //Assign click listeners
+        shopSignupButton.setOnClickListener(this)
         buttonStartVerification.setOnClickListener(this)
         buttonVerifyPhone.setOnClickListener(this)
         buttonResend.setOnClickListener(this)
@@ -263,7 +266,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
                                     authRepository.NEW_USER.toLong() -> {
                                         Log.d(TAG, "User type: NEW_USER")
                                         intent =
-                                            Intent(applicationContext, SignupActivity::class.java)
+                                            Intent(applicationContext, UserSignupActivity::class.java)
                                         val userData = UserDataModel(phone = phoneNumber)
                                         intent.putExtra(
                                             getString(R.string.userDataParcel),
@@ -395,6 +398,9 @@ class Login : AppCompatActivity(), View.OnClickListener {
                 resendVerificationCode(
                     phoneNumber!!, mResendToken
                 )
+            }
+            R.id.buttonShopSignUp -> {
+
             }
         }
     }

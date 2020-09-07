@@ -6,4 +6,9 @@
     <string name="city_prompt">City</string>
     <string name="state_prompt">State</string>
     <string name="country_prompt">Country</string>
+
+    <string-array name="states">
+
+    </string-array>
+
 </resources>

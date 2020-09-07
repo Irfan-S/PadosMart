@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="espl.apps.padosmart">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Required for foreground services on P+. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,9 +31,14 @@
 
         <activity android:name=".bases.ShopBase" />
         <activity android:name=".bases.EndUserBase" />
-        <activity android:name=".SignupActivity" />
+        <activity android:name=".UserSignupActivity" />
 
-        <activity android:name=".MainActivity" />
+        <service
+            android:name=".services.LocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
     </application>
 
 </manifest>
