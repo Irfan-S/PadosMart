@@ -120,7 +120,7 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:text="Sign up as a business"
-        android:textColor="#FFFFFF"
+        android:textColor="@android:color/primary_text_light"
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

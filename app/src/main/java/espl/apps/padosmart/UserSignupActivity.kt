@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,7 +23,6 @@ import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.getAddress
-import espl.apps.padosmart.utils.toText
 
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 
@@ -68,7 +66,7 @@ class UserSignupActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup)
+        setContentView(R.layout.fragment_user_signup)
 
         authRepository = AuthRepository(applicationContext)
 
