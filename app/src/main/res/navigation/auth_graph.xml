@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_graph"
+    app:startDestination="@id/login">
+
+    <fragment
+        android:id="@+id/login"
+        android:name="espl.apps.padosmart.fragments.auth.Login"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_shopInfo2"
+            app:destination="@id/shopSignup" />
+        <action
+            android:id="@+id/action_login_to_user2"
+            app:destination="@id/userSignup" />
+    </fragment>
+    <fragment
+        android:id="@+id/userSignup"
+        android:name="espl.apps.padosmart.fragments.auth.User"
+        android:label="User"
+        tools:layout="@layout/fragment_signup_user" />
+    <fragment
+        android:id="@+id/shopSignup"
+        android:name="espl.apps.padosmart.fragments.auth.ShopInfo"
+        android:label="ShopInfo"
+        tools:layout="@layout/fragment_signup_shop">
+        <action
+            android:id="@+id/action_shopSignup_to_shopDetails"
+            app:destination="@id/shopDetails" />
+    </fragment>
+    <fragment
+        android:id="@+id/shopDetails"
+        android:name="espl.apps.padosmart.fragments.auth.ShopDetails"
+        android:label="ShopDetails"
+        tools:layout="@layout/fragment_signup_shop_details" />
+</navigation>

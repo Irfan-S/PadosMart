@@ -6,8 +6,7 @@ import android.os.CountDownTimer
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import espl.apps.padosmart.bases.AuthBase
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
@@ -21,10 +20,10 @@ class SplashScreenActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Firebase.database.setPersistenceEnabled(true)
+//        Firebase.database.setPersistenceEnabled(true)
         val authRepository = AuthRepository(applicationContext)
 
-        intentLogin = Intent(applicationContext, Login::class.java)
+        intentLogin = Intent(applicationContext, AuthBase::class.java)
         val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
             override fun onTick(millisecondsUntilDone: Long) {
 

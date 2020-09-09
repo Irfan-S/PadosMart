@@ -1,4 +1,4 @@
-package espl.apps.padosmart.fragments.signup
+package espl.apps.padosmart.fragments.auth
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import espl.apps.padosmart.R
 
-class ShopDetails: Fragment() {
+class ShopInfo: Fragment() {
 
-    val TAG = "SignupShopDetails"
+    val TAG = "SignupShopInfo"
+
+    lateinit var localView: View
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -17,10 +19,12 @@ class ShopDetails: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        val view =
-            inflater.inflate(R.layout.fragment_signup_shop_details, container, false) as View
+        localView =
+            inflater.inflate(R.layout.fragment_signup_shop, container, false) as View
 
-        return view
+
+
+        return localView
     }
 
 }

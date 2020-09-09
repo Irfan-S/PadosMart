@@ -3,78 +3,67 @@ package espl.apps.padosmart.bases
 import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
-import android.location.Address
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
-import android.text.TextUtils
 import android.util.Log
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.BuildConfig
-import espl.apps.padosmart.Login
 import espl.apps.padosmart.R
-import espl.apps.padosmart.models.UserDataModel
-import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.getAddress
-import espl.apps.padosmart.viewmodels.SignupViewModel
+import espl.apps.padosmart.viewmodels.AuthViewModel
 
-private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
+class AuthBase : AppCompatActivity() {
 
-class SignupBase: AppCompatActivity() {
-
-
-    val TAG = "signupActivity"
+    private val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
+    val TAG = "AuthBase"
 
     private var foregroundOnlyLocationServiceBound = false
 
-    // Provides location updates for while-in-use feature.
-    private var locationService: LocationService? = null
 
     // Listens for location broadcasts from ForegroundOnlyLocationService.
     private lateinit var locationBroadcastReceiver: LocationBroadcastReceiver
 
 // TODO complete fragment implementation
 
-    lateinit var signupViewModel: SignupViewModel
-
-
-    //Declare buttons
-    lateinit var submitDetailsButton: Button
-    private lateinit var locationButton: Button
+    lateinit var authViewModel: AuthViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.fragment_user_signup)
-        signupViewModel = ViewModelProvider(this).get(SignupViewModel::class.java)
+
+        setContentView(R.layout.base_auth)
+        locationBroadcastReceiver = LocationBroadcastReceiver()
+
+        val host: NavHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment? ?: return
+
+        authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
 
     }
-
-
 
 
     // Monitors connection to the while-in-use service.
     private val foregroundOnlyServiceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            Log.d(TAG, "Service attached")
             val binder = service as LocationService.LocalBinder
-            locationService = binder.service
+            authViewModel.locationService = binder.service
             foregroundOnlyLocationServiceBound = true
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            locationService = null
+            Log.d(TAG, "Service detached")
+            authViewModel.locationService = null
             foregroundOnlyLocationServiceBound = false
         }
     }
@@ -113,14 +102,14 @@ class SignupBase: AppCompatActivity() {
     }
 
 
-    public fun foregroundPermissionApproved(): Boolean {
+    fun foregroundPermissionApproved(): Boolean {
         return PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
         )
     }
 
-    public fun requestForegroundPermissions() {
+    fun requestForegroundPermissions() {
         val provideRationale = foregroundPermissionApproved()
 
         // If the user denied a previous request, but didn't check "Don't ask again", provide
@@ -143,7 +132,7 @@ class SignupBase: AppCompatActivity() {
                 .show()
         } else {
             Log.d(TAG, "Request foreground only permission")
-            signupViewModel.isAddressFetchInProgress.value = true
+            authViewModel.isAddressFetchInProgress.value = true
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -168,7 +157,7 @@ class SignupBase: AppCompatActivity() {
 
                 grantResults[0] == PackageManager.PERMISSION_GRANTED ->
                     // Permission was granted.
-                    locationService?.subscribeToLocationUpdates()
+                    authViewModel.locationService?.subscribeToLocationUpdates()
 
                 else -> {
 
@@ -209,13 +198,14 @@ class SignupBase: AppCompatActivity() {
             )
 
             if (location != null) {
-                signupViewModel.isAddressFetchInProgress.value=false
-                signupViewModel.address.value = location.getAddress(applicationContext,
+                authViewModel.isAddressFetchInProgress.value = false
+                authViewModel.address.value = location.getAddress(
+                    applicationContext,
                     location.latitude,
-                    location.longitude)
+                    location.longitude
+                )
             }
         }
     }
 
 }
-

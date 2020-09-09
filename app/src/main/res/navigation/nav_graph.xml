@@ -24,23 +24,4 @@
         android:name="espl.apps.padosmart.fragments.enduser.UserProfile"
         android:label="ProfileFragmentUser"
         tools:layout="@layout/fragment_profile_user"/>
-    <fragment
-        android:id="@+id/shopInfo"
-        tools:layout="@layout/fragment_signup_shop"
-        android:name="espl.apps.padosmart.fragments.signup.ShopInfo"
-        android:label="Shop" >
-        <action
-            android:id="@+id/action_shop_to_shopDetails"
-            app:destination="@id/shopDetails" />
-    </fragment>
-    <fragment
-        android:id="@+id/user"
-        tools:layout="@layout/fragment_user_signup"
-        android:name="espl.apps.padosmart.fragments.signup.User"
-        android:label="User" />
-    <fragment
-        android:id="@+id/shopDetails"
-        tools:layout="@layout/fragment_signup_shop_details"
-        android:name="espl.apps.padosmart.fragments.signup.ShopDetails"
-        android:label="ShopDetails" />
 </navigation>

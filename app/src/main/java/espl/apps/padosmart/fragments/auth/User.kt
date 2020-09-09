@@ -1,6 +1,5 @@
-package espl.apps.padosmart.fragments.signup
+package espl.apps.padosmart.fragments.auth
 
-import android.content.Intent
 import android.location.Address
 import android.os.Bundle
 import android.text.TextUtils
@@ -12,30 +11,21 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
-import espl.apps.padosmart.Login
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.SignupBase
+import espl.apps.padosmart.bases.AuthBase
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
-import espl.apps.padosmart.services.LocationService
-import espl.apps.padosmart.viewmodels.SignupViewModel
+import espl.apps.padosmart.viewmodels.AuthViewModel
 
 class User: Fragment(), View.OnClickListener {
 
-    val TAG = "SignupUser"
-
-    private var foregroundOnlyLocationServiceBound = false
-
-    // Provides location updates for while-in-use feature.
-    private var locationService: LocationService? = null
-
-    // Listens for location broadcasts from ForegroundOnlyLocationService.
-    private lateinit var locationBroadcastReceiver: SignupBase.LocationBroadcastReceiver
+    val TAG = "UserAuthFragment"
 
 
-    lateinit var authRepository: AuthRepository
 
     //Declare editFields
     lateinit var userNameField: EditText
@@ -49,11 +39,12 @@ class User: Fragment(), View.OnClickListener {
 
     lateinit var userData: UserDataModel
 
+    lateinit var localView: View
 
     //Declare buttons
     lateinit var submitDetailsButton: Button
     private lateinit var locationButton: Button
-    lateinit var signupViewModel: SignupViewModel
+    lateinit var authViewModel: AuthViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,31 +52,56 @@ class User: Fragment(), View.OnClickListener {
         savedInstanceState: Bundle?
     ): View? {
 
-        val view =
+        localView =
             inflater.inflate(R.layout.fragment_signup_user, container, false) as View
-        signupViewModel =
-            activity?.let { ViewModelProvider(it).get(SignupViewModel::class.java) }!!
-        locationButton = view.findViewById(R.id.locationButton)
+        authViewModel =
+            activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
 
-        userCityField = view.findViewById(R.id.editTextCity)
-        userStateField = view.findViewById(R.id.editTextState)
-        userCountryField = view.findViewById(R.id.editTextCountry)
-        userPinCodeField = view.findViewById(R.id.editTextPin)
+        userData = authViewModel.userData
+
+        locationButton = localView.findViewById(R.id.locationButton)
+
+        userCityField = localView.findViewById(R.id.editTextCity)
+        userStateField = localView.findViewById(R.id.editTextState)
+        userCountryField = localView.findViewById(R.id.editTextCountry)
+        userPinCodeField = localView.findViewById(R.id.editTextPin)
 
 
         locationButton.setOnClickListener(this)
 
+        val serviceObserver =
+            Observer<Address> { newStatus ->
+                run {
+                    if (newStatus != null) {
+                        fillDetails(newStatus)
+                    }
+                }
+            }
 
-        userNameField = view.findViewById(R.id.userNameField)
-        userPhoneTextView = view.findViewById(R.id.userPhoneTextView)
-        userEmailField = view.findViewById(R.id.userEmailField)
-        userAddressField = view.findViewById(R.id.userAddressField)
+        val buttonObserver =
+            Observer<Boolean> { newStatus ->
+                run {
+                    if (newStatus) {
+                        locationButton.text = "Fetching..."
+                    } else {
+                        locationButton.text = "Find me"
+                    }
+                }
+            }
+
+        authViewModel.address.observe(viewLifecycleOwner, serviceObserver)
+        authViewModel.isAddressFetchInProgress.observe(viewLifecycleOwner, buttonObserver)
+
+        userNameField = localView.findViewById(R.id.shopNameField)
+        userPhoneTextView = localView.findViewById(R.id.userPhoneTextView)
+        userEmailField = localView.findViewById(R.id.shopEmailField)
+        userAddressField = localView.findViewById(R.id.userAddressField)
 
         userPhoneTextView.text = userData.phone
 
-        submitDetailsButton = view.findViewById(R.id.submitDetailsButton)
+        submitDetailsButton = localView.findViewById(R.id.submitDetailsButton)
         submitDetailsButton.setOnClickListener(this)
-        return view
+        return localView
     }
 
     private fun areUserDetailsValid(): Boolean {
@@ -118,13 +134,12 @@ class User: Fragment(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v!!.id) {
             R.id.locationButton -> {
-                locationService!!.checkGpsStatus()
-                if ((activity as SignupBase).foregroundPermissionApproved()) {
-                    locationButton.text = "Fetching..."
-                    locationService?.subscribeToLocationUpdates()
+                authViewModel.locationService!!.checkGpsStatus()
+                if ((activity as AuthBase).foregroundPermissionApproved()) {
+                    authViewModel.locationService?.subscribeToLocationUpdates()
                         ?: Log.d(TAG, "Service Not Bound")
                 } else {
-                    (activity as SignupBase).requestForegroundPermissions()
+                    (activity as AuthBase).requestForegroundPermissions()
                 }
 
             }
@@ -140,33 +155,34 @@ class User: Fragment(), View.OnClickListener {
                     userData.country = userCountryField.text.toString()
                     userData.pinCode = userPinCodeField.text.toString()
 
-                    authRepository.getFirebaseUser()!!.updateEmail(userData.email.toString())
+                    authViewModel.authRepository.getFirebaseUser()!!
+                        .updateEmail(userData.email.toString())
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Log.d(TAG, "User email address updated.")
-                                authRepository.getFirebaseUser()!!.sendEmailVerification()
+                                authViewModel.authRepository.getFirebaseUser()!!
+                                    .sendEmailVerification()
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
                                             Log.d(TAG, "Email sent.")
                                             Snackbar.make(
-                                                findViewById(android.R.id.content),
+                                                requireActivity().findViewById(android.R.id.content),
                                                 "Please verify your email account to proceed",
                                                 Snackbar.LENGTH_LONG
                                             ).show()
-                                            authRepository.createEndUserDataObject(userData,
+                                            authViewModel.authRepository.createEndUserDataObject(
+                                                userData,
                                                 object : AuthRepository.UserDataInterface {
                                                     override fun onUploadCallback(success: Boolean) {
                                                         if (success) {
-                                                            authRepository.createEndUserAuthObject()
-                                                            val intent = Intent(
-                                                                applicationContext,
-                                                                Login::class.java
-                                                            )
-                                                            startActivity(intent)
-                                                            finish()
+                                                            authViewModel.authRepository.createEndUserAuthObject()
+                                                            localView.findNavController()
+                                                                .navigate(R.id.login)
                                                         } else {
                                                             Snackbar.make(
-                                                                findViewById(android.R.id.content),
+                                                                requireActivity().findViewById(
+                                                                    android.R.id.content
+                                                                ),
                                                                 "Unable to sign you up at this time",
                                                                 Snackbar.LENGTH_LONG
                                                             ).show()
@@ -176,7 +192,7 @@ class User: Fragment(), View.OnClickListener {
                                         } else {
                                             Log.d(TAG, "Failure : ${task.result.toString()}")
                                             Snackbar.make(
-                                                findViewById(android.R.id.content),
+                                                requireActivity().findViewById(android.R.id.content),
                                                 "Email address does not exist",
                                                 Snackbar.LENGTH_LONG
                                             ).show()
@@ -185,7 +201,7 @@ class User: Fragment(), View.OnClickListener {
                                     }
                             } else {
                                 Snackbar.make(
-                                    findViewById(android.R.id.content),
+                                    requireActivity().findViewById(android.R.id.content),
                                     "Email address does not exist",
                                     Snackbar.LENGTH_LONG
                                 ).show()

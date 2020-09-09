@@ -1,35 +1,43 @@
-package espl.apps.padosmart
+package espl.apps.padosmart.fragments.auth
 
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.LinearLayout
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
-import com.google.firebase.auth.*
-import com.google.firebase.auth.PhoneAuthProvider.ForceResendingToken
-import com.google.firebase.auth.PhoneAuthProvider.OnVerificationStateChangedCallbacks
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthProvider
 import com.hbb20.CountryCodePicker
+import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
-import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
-import kotlinx.android.synthetic.main.activity_login.*
+import espl.apps.padosmart.viewmodels.AuthViewModel
 import java.util.concurrent.TimeUnit
 
+class Login : Fragment(), View.OnClickListener {
 
-class Login : AppCompatActivity(), View.OnClickListener {
+    val TAG = "SignupShopInfo"
 
-    //Core data repo
-    lateinit var authRepository: AuthRepository
+    lateinit var authViewModel: AuthViewModel
 
     // [START declare_auth]
     lateinit var mAuth: FirebaseAuth
+
+    lateinit var localView: View
 
     // Declaring all views
     lateinit var buttonStartVerification: Button
@@ -41,27 +49,35 @@ class Login : AppCompatActivity(), View.OnClickListener {
 
     lateinit var countryCodePicker: CountryCodePicker
 
+    lateinit var phoneAuthFields: LinearLayout
+
     private var phoneNumber: String? = null
 
     private var mVerificationInProgress = false
     private var mVerificationId: String? = null
-    private var mResendToken: ForceResendingToken? = null
-    private var mCallbacks: OnVerificationStateChangedCallbacks? = null
+    private var mResendToken: PhoneAuthProvider.ForceResendingToken? = null
+    private var mCallbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
-        authRepository = AuthRepository(applicationContext)
-        mAuth = authRepository.getFirebaseAuthReference()
+        localView =
+            inflater.inflate(R.layout.fragment_login, container, false) as View
+        authViewModel =
+            activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+
+        mAuth = authViewModel.authRepository.getFirebaseAuthReference()
         // Restore instance state
-        savedInstanceState?.let { onRestoreInstanceState(it) }
+        savedInstanceState?.let { onActivityCreated(it) }
 
         // Assign views
-        buttonStartVerification = findViewById<Button>(R.id.buttonStartVerification)
-        buttonVerifyPhone = findViewById<Button>(R.id.buttonVerifyPhone)
-        buttonResend = findViewById<Button>(R.id.buttonResend)
-        shopSignupButton = findViewById(R.id.buttonShopSignUp)
+        buttonStartVerification = localView.findViewById<Button>(R.id.buttonStartVerification)
+        buttonVerifyPhone = localView.findViewById<Button>(R.id.buttonVerifyPhone)
+        buttonResend = localView.findViewById<Button>(R.id.buttonResend)
+        shopSignupButton = localView.findViewById(R.id.buttonShopSignUp)
 
         //Assign click listeners
         shopSignupButton.setOnClickListener(this)
@@ -70,18 +86,20 @@ class Login : AppCompatActivity(), View.OnClickListener {
         buttonResend.setOnClickListener(this)
 
         //Assign field entries
-        fieldPhoneNumber = findViewById(R.id.fieldPhoneNumber)
-        fieldVerificationCode = findViewById(R.id.fieldVerificationCode)
+        fieldPhoneNumber = localView.findViewById(R.id.fieldPhoneNumber)
+        fieldVerificationCode = localView.findViewById(R.id.fieldVerificationCode)
 
-        countryCodePicker = findViewById(R.id.ccp)
+        countryCodePicker = localView.findViewById(R.id.ccp)
         countryCodePicker.registerCarrierNumberEditText(fieldPhoneNumber)
+
+        phoneAuthFields = localView.findViewById(R.id.phoneAuthFields)
 
         phoneAuthFields.visibility = View.INVISIBLE
 
 
         // Initialize phone auth callbacks
         // [START phone_auth_callbacks]
-        mCallbacks = object : OnVerificationStateChangedCallbacks() {
+        mCallbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(credential: PhoneAuthCredential) {
                 // This callback will be invoked in two situations:
                 // 1 - Instant verification. In some cases the phone number can be instantly
@@ -117,7 +135,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
                     // The SMS quota for the project has been exceeded
                     // [START_EXCLUDE]
                     Snackbar.make(
-                        findViewById(android.R.id.content), "Quota exceeded.",
+                        localView.findViewById(android.R.id.content), "Quota exceeded.",
                         Snackbar.LENGTH_SHORT
                     ).show()
                     // [END_EXCLUDE]
@@ -131,7 +149,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
 
             override fun onCodeSent(
                 verificationId: String,
-                token: ForceResendingToken
+                token: PhoneAuthProvider.ForceResendingToken
             ) {
                 // The SMS verification code has been sent to the provided phone number, we
                 // now need to ask the user to enter the code and then construct a credential
@@ -149,23 +167,8 @@ class Login : AppCompatActivity(), View.OnClickListener {
             }
         }
         // [END phone_auth_callbacks]
-
+        return localView
     }
-
-
-//    // [START on_start_check_user]
-//    public override fun onStart() {
-//        super.onStart()
-//        // Check if user is signed in (non-null) and update UI accordingly.
-//        val currentUser = mAuth.currentUser
-//        updateUI(currentUser)
-//
-//        // [START_EXCLUDE]
-//        if (mVerificationInProgress && validatePhoneNumber()) {
-//            startPhoneNumberVerification(fieldPhoneNumber.text.toString())
-//        }
-//        // [END_EXCLUDE]
-//    }
 
     // [END on_start_check_user]
     override fun onSaveInstanceState(outState: Bundle) {
@@ -173,10 +176,13 @@ class Login : AppCompatActivity(), View.OnClickListener {
         outState.putBoolean(KEY_VERIFY_IN_PROGRESS, mVerificationInProgress)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        mVerificationInProgress = savedInstanceState.getBoolean(KEY_VERIFY_IN_PROGRESS)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        if (savedInstanceState != null) {
+            mVerificationInProgress = savedInstanceState.getBoolean(KEY_VERIFY_IN_PROGRESS)
+        }
     }
+
 
     private fun startPhoneNumberVerification(phoneNumber: String) {
         // [START start_phone_auth]
@@ -184,7 +190,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
             phoneNumber,  // Phone number to verify
             60,  // Timeout duration
             TimeUnit.SECONDS,  // Unit of timeout
-            this,  // Activity (for callback binding)
+            requireActivity(),  // Activity (for callback binding)
             mCallbacks!!
         ) // OnVerificationStateChangedCallbacks
         // [END start_phone_auth]
@@ -202,13 +208,13 @@ class Login : AppCompatActivity(), View.OnClickListener {
     // [START resend_verification]
     private fun resendVerificationCode(
         phoneNumber: String,
-        token: ForceResendingToken?
+        token: PhoneAuthProvider.ForceResendingToken?
     ) {
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
             phoneNumber,  // Phone number to verify
             60,  // Timeout duration
             TimeUnit.SECONDS,  // Unit of timeout
-            this,  // Activity (for callback binding)
+            requireActivity(),  // Activity (for callback binding)
             mCallbacks!!,  // OnVerificationStateChangedCallbacks
             token
         ) // ForceResendingToken from callbacks
@@ -219,61 +225,55 @@ class Login : AppCompatActivity(), View.OnClickListener {
     private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
         mAuth.signInWithCredential(credential)
             .addOnCompleteListener(
-                this
+                requireActivity()
             ) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
 
-                    authRepository.setFirebaseUser(task.result!!.user!!)
-                    authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
+                    authViewModel.authRepository.setFirebaseUser(task.result!!.user!!)
+                    authViewModel.authRepository.getFirebaseUserType(object :
+                        AuthRepository.AuthDataInterface {
                         override fun onAuthCallback(response: Long) {
                             Log.d(TAG, "User data fetched with response: $response")
                             if (task.result!!.user!!.isEmailVerified) {
                                 Log.d(TAG, "Email verified user logging in")
                                 when (response) {
-                                    authRepository.END_USER.toLong() -> {
+                                    authViewModel.authRepository.END_USER.toLong() -> {
                                         Log.d(TAG, "User type: END_USER")
-                                        intent = Intent(applicationContext, EndUserBase::class.java)
+                                        val intent =
+                                            Intent(requireContext(), EndUserBase::class.java)
                                         startActivity(intent)
-                                        finish()
+                                        requireActivity().finish()
                                     }
-                                    authRepository.SHOP_USER.toLong() -> {
+                                    authViewModel.authRepository.SHOP_USER.toLong() -> {
                                         Log.d(TAG, "User type: SHOP_USER")
-                                        intent = Intent(applicationContext, ShopBase::class.java)
+                                        val intent = Intent(requireContext(), ShopBase::class.java)
                                         startActivity(intent)
-                                        finish()
+                                        requireActivity().finish()
                                     }
-                                    authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                                    authViewModel.authRepository.AUTH_ACCESS_FAILED.toLong() -> {
                                         Snackbar.make(
-                                            findViewById(android.R.id.content),
+                                            requireActivity().findViewById(android.R.id.content),
                                             "Unable to sign you in",
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
                                 }
                             } else {
-                                Log.d(TAG, "Email unverified user")
                                 when (response) {
-                                    authRepository.END_USER.toLong() -> {
+                                    authViewModel.authRepository.END_USER.toLong() -> {
                                         Log.d(TAG, "User type: END_USER unverified")
                                         Snackbar.make(
-                                            findViewById(android.R.id.content),
+                                            requireActivity().findViewById(android.R.id.content),
                                             "Please verify your email and try again",
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
-                                    authRepository.NEW_USER.toLong() -> {
+                                    authViewModel.authRepository.NEW_USER.toLong() -> {
                                         Log.d(TAG, "User type: NEW_USER")
-                                        intent =
-                                            Intent(applicationContext, UserSignupActivity::class.java)
-                                        val userData = UserDataModel(phone = phoneNumber)
-                                        intent.putExtra(
-                                            getString(R.string.userDataParcel),
-                                            userData
-                                        )
-                                        startActivity(intent)
-                                        finish()
+                                        authViewModel.userData.phone = phoneNumber
+                                        localView.findNavController().navigate(R.id.userSignup)
                                     }
                                 }
                             }
@@ -315,11 +315,6 @@ class Login : AppCompatActivity(), View.OnClickListener {
                     // [END_EXCLUDE]
                 }
             }
-    }
-
-    // [END sign_in_with_phone]
-    private fun signOut() {
-        mAuth.signOut()
     }
 
 
@@ -400,7 +395,7 @@ class Login : AppCompatActivity(), View.OnClickListener {
                 )
             }
             R.id.buttonShopSignUp -> {
-
+                view.findNavController().navigate(R.id.shopSignup)
             }
         }
     }
@@ -413,4 +408,5 @@ class Login : AppCompatActivity(), View.OnClickListener {
         private const val STATE_VERIFY_SUCCESS = 4
         private const val STATE_SIGNIN_FAILED = 5
     }
+
 }

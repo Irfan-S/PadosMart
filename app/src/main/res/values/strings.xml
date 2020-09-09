@@ -6,6 +6,7 @@
     <string name="city_prompt">City</string>
     <string name="state_prompt">State</string>
     <string name="country_prompt">Country</string>
+    <string name="isShopFlag">isShop</string>
 
     <string-array name="states">
 
