@@ -395,7 +395,7 @@ class Login : Fragment(), View.OnClickListener {
                 )
             }
             R.id.buttonShopSignUp -> {
-                view.findNavController().navigate(R.id.shopSignup)
+                view.findNavController().navigate(R.id.shopDetails)
             }
         }
     }

@@ -24,6 +24,4 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<Boolean>(false)
     }
 
-
-
 }

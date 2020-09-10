@@ -50,7 +50,7 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
-        android:id="@+id/userAddressField"
+        android:id="@+id/shopAddressField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
@@ -123,11 +123,11 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
         android:text="Find me"
-        app:layout_constraintBottom_toBottomOf="@+id/userAddressField"
+        app:layout_constraintBottom_toBottomOf="@+id/shopAddressField"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/userAddressField"
-        app:layout_constraintTop_toTopOf="@+id/userAddressField" />
+        app:layout_constraintStart_toEndOf="@+id/shopAddressField"
+        app:layout_constraintTop_toTopOf="@+id/shopAddressField" />
 
     <EditText
         android:id="@+id/editTextPin"
@@ -140,7 +140,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userAddressField"
+        app:layout_constraintTop_toBottomOf="@+id/shopAddressField"
         app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

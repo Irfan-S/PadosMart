@@ -95,7 +95,7 @@ class User: Fragment(), View.OnClickListener {
         userNameField = localView.findViewById(R.id.shopNameField)
         userPhoneTextView = localView.findViewById(R.id.userPhoneTextView)
         userEmailField = localView.findViewById(R.id.shopEmailField)
-        userAddressField = localView.findViewById(R.id.userAddressField)
+        userAddressField = localView.findViewById(R.id.shopAddressField)
 
         userPhoneTextView.text = userData.phone
 

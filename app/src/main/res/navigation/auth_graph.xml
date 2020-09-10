@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_login_to_shopInfo2"
-            app:destination="@id/shopSignup" />
+            app:destination="@id/shopDetails" />
         <action
             android:id="@+id/action_login_to_user2"
             app:destination="@id/userSignup" />
@@ -23,17 +23,26 @@
         android:label="User"
         tools:layout="@layout/fragment_signup_user" />
     <fragment
-        android:id="@+id/shopSignup"
-        android:name="espl.apps.padosmart.fragments.auth.ShopInfo"
-        android:label="ShopInfo"
-        tools:layout="@layout/fragment_signup_shop">
-        <action
-            android:id="@+id/action_shopSignup_to_shopDetails"
-            app:destination="@id/shopDetails" />
-    </fragment>
-    <fragment
         android:id="@+id/shopDetails"
         android:name="espl.apps.padosmart.fragments.auth.ShopDetails"
-        android:label="ShopDetails"
-        tools:layout="@layout/fragment_signup_shop_details" />
+        android:label="shopDetails"
+        tools:layout="@layout/fragment_signup_shop_details">
+        <action
+            android:id="@+id/action_shopSignup_to_shopDetails"
+            app:destination="@id/shopIDInfo" />
+    </fragment>
+    <fragment
+        android:id="@+id/shopIDInfo"
+        android:name="espl.apps.padosmart.fragments.auth.ShopIdentificationInfo"
+        android:label="shopIDInfo"
+        tools:layout="@layout/fragment_signup_shop_identification_info">
+        <action
+            android:id="@+id/action_shopIDInfo_to_shopDeliveryInfo"
+            app:destination="@id/shopDeliveryInfo" />
+    </fragment>
+    <fragment
+        android:id="@+id/shopDeliveryInfo"
+        android:name="espl.apps.padosmart.fragments.auth.ShopDeliveryInfo"
+        android:label="ShopDeliveryInfo"
+        tools:layout="@layout/fragment_signup_shop_delivery_info" />
 </navigation>

@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import espl.apps.padosmart.R
 
-class ShopInfo: Fragment() {
+class ShopDeliveryInfo : Fragment() {
 
-    val TAG = "SignupShopInfo"
+    val TAG = "SignupShopDeliveryInfo"
 
     lateinit var localView: View
 
@@ -20,7 +20,7 @@ class ShopInfo: Fragment() {
     ): View? {
 
         localView =
-            inflater.inflate(R.layout.fragment_signup_shop, container, false) as View
+            inflater.inflate(R.layout.fragment_signup_shop_delivery_info, container, false) as View
 
 
 
