@@ -12,15 +12,14 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.UserDataModel
+import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
+import espl.apps.padosmart.utils.END_USER
+import espl.apps.padosmart.utils.NEW_USER
 
 
 class AuthRepository(context: Context) {
 
 
-    val END_USER = 1
-    val SHOP_USER = 2
-    val NEW_USER = 3
-    val AUTH_ACCESS_FAILED = 0
 
     private val TAG = "CoreRepository"
 

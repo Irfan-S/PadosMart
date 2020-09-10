@@ -42,6 +42,7 @@ class User: Fragment(), View.OnClickListener {
     lateinit var localView: View
 
     //Declare buttons
+    lateinit var signupShopButton: Button
     lateinit var submitDetailsButton: Button
     private lateinit var locationButton: Button
     lateinit var authViewModel: AuthViewModel
@@ -60,6 +61,8 @@ class User: Fragment(), View.OnClickListener {
         userData = authViewModel.userData
 
         locationButton = localView.findViewById(R.id.locationButton)
+        signupShopButton = localView.findViewById(R.id.buttonShopSignUp)
+        signupShopButton.setOnClickListener(this)
 
         userCityField = localView.findViewById(R.id.editTextCity)
         userStateField = localView.findViewById(R.id.editTextState)
@@ -133,6 +136,10 @@ class User: Fragment(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v!!.id) {
+            R.id.buttonShopSignUp -> {
+                authViewModel.shopDataModel.phone = userData.phone
+                localView.findNavController().navigate(R.id.shopDetails)
+            }
             R.id.locationButton -> {
                 authViewModel.locationService!!.checkGpsStatus()
                 if ((activity as AuthBase).foregroundPermissionApproved()) {

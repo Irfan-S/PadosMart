@@ -18,12 +18,12 @@ import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.BuildConfig
 import espl.apps.padosmart.R
 import espl.apps.padosmart.services.LocationService
+import espl.apps.padosmart.utils.REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
 import espl.apps.padosmart.utils.getAddress
 import espl.apps.padosmart.viewmodels.AuthViewModel
 
 class AuthBase : AppCompatActivity() {
 
-    private val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
     val TAG = "AuthBase"
 
     private var foregroundOnlyLocationServiceBound = false

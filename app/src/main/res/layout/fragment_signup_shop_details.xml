@@ -36,14 +36,13 @@
         app:layout_constraintTop_toTopOf="@+id/shopNameField"
         app:layout_constraintVertical_bias="1.0" />
 
-    <EditText
-        android:id="@+id/shopNumberField"
+    <TextView
+        android:id="@+id/shopNumberTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:hint="Shop Number"
-        android:inputType="phone"
+        android:hint="Shop Mobile Number"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
@@ -64,7 +63,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/shopNumberField"
+        app:layout_constraintTop_toBottomOf="@id/shopNumberTextView"
         app:layout_constraintVertical_bias="0.0" />
 
     <EditText
@@ -194,6 +193,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Male"
+            android:checked="true"
             tools:layout_editor_absoluteX="256dp"
             tools:layout_editor_absoluteY="459dp" />
 

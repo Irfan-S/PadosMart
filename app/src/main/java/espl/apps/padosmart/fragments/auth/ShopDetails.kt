@@ -11,15 +11,18 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.AuthBase
-import espl.apps.padosmart.repository.AuthRepository
+import espl.apps.padosmart.utils.GENDER_FEMALE
+import espl.apps.padosmart.utils.GENDER_MALE
+import espl.apps.padosmart.utils.GENDER_OTHERS
 import espl.apps.padosmart.viewmodels.AuthViewModel
 
-class ShopDetails : Fragment(), View.OnClickListener {
+class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChangeListener {
 
     val TAG = "SignupShopDetails"
 
@@ -58,13 +61,17 @@ class ShopDetails : Fragment(), View.OnClickListener {
 
         shopNameEditText = localView.findViewById(R.id.shopNameField)
         ownerNameEditText = localView.findViewById(R.id.shopOwnerField)
-        shopNumberEditText = localView.findViewById(R.id.shopNumberField)
+        shopNumberEditText = localView.findViewById(R.id.shopNumberTextView)
         shopEmailEditText = localView.findViewById(R.id.shopEmailField)
         shopAddressEditText = localView.findViewById(R.id.shopAddressField)
 
         pinCodeEditText = localView.findViewById(R.id.editTextPin)
-        cityEditText = localView.findViewById()
-
+        cityEditText = localView.findViewById(R.id.editTextCity)
+        stateEditText = localView.findViewById(R.id.editTextState)
+        countryEditText = localView.findViewById(R.id.editTextCountry)
+        dobEditText = localView.findViewById(R.id.editTextDOB)
+        genderRadioGroup = localView.findViewById(R.id.genderRadioGroup)
+        genderRadioGroup.setOnCheckedChangeListener(this)
 
         locationButton = localView.findViewById(R.id.locationButton)
         locationButton.setOnClickListener(this)
@@ -72,33 +79,53 @@ class ShopDetails : Fragment(), View.OnClickListener {
         continueButton = localView.findViewById(R.id.continueButton)
         continueButton.setOnClickListener(this)
 
+        val serviceObserver =
+            Observer<Address> { newStatus ->
+                run {
+                    if (newStatus != null) {
+                        fillDetails(newStatus)
+                    }
+                }
+            }
+
+        authViewModel.address.observe(viewLifecycleOwner, serviceObserver)
+
         return localView
     }
 
-    private fun areUserDetailsValid(): Boolean {
+    private fun areShopDetailsValid(): Boolean {
         var flag = true
-        if (TextUtils.isEmpty(userNameField.text)) {
+        if (TextUtils.isEmpty(shopNameEditText.text)) {
             flag = false
-            userNameField.error = "Invalid name"
+            shopNameEditText.error = "Invalid name"
         }
-        if (TextUtils.isEmpty(userEmailField.text)) {
+        if (TextUtils.isEmpty(shopEmailEditText.text)) {
             flag = false
-            userEmailField.error = "Email cannot be empty"
+            shopEmailEditText.error = "Email cannot be empty"
         }
-        if (TextUtils.isEmpty(userAddressField.text)) {
+        if (TextUtils.isEmpty(shopAddressEditText.text)) {
             flag = false
-            userAddressField.error = "Invalid address"
+            shopAddressEditText.error = "Invalid address"
+        }
+        if (TextUtils.isEmpty(ownerNameEditText.text)) {
+            flag = false
+            ownerNameEditText.error = "Invalid name"
+        }
+        if (TextUtils.isEmpty(shopNumberEditText.text)) {
+            flag = false
+            shopNumberEditText.error = "Invalid mobile"
         }
 
         return flag
     }
 
+
     private fun fillDetails(address: Address) {
-        userAddressField.setText(address.getAddressLine(0))
-        userPinCodeField.setText(address.postalCode)
-        userCityField.setText(address.locality)
-        userStateField.setText(address.adminArea)
-        userCountryField.setText(address.countryName)
+        shopAddressEditText.setText(address.getAddressLine(0))
+        pinCodeEditText.setText(address.postalCode)
+        cityEditText.setText(address.locality)
+        stateEditText.setText(address.adminArea)
+        countryEditText.setText(address.countryName)
     }
 
     override fun onClick(v: View?) {
@@ -114,22 +141,21 @@ class ShopDetails : Fragment(), View.OnClickListener {
 
             }
             R.id.continueButton -> {
-
-            }
-            R.id.submitDetailsButton -> {
-                if (areUserDetailsValid()) {
+                if (areShopDetailsValid()) {
 
                     //TODO verifying user data
-                    userData.name = userNameField.text.toString()
-                    userData.address = userAddressField.text.toString()
-                    userData.email = userEmailField.text.toString()
-                    userData.city = userCityField.text.toString()
-                    userData.state = userStateField.text.toString()
-                    userData.country = userCountryField.text.toString()
-                    userData.pinCode = userPinCodeField.text.toString()
+                    authViewModel.shopDataModel.DOB = dobEditText.text.toString()
+                    authViewModel.shopDataModel.shopName = shopNameEditText.text.toString()
+                    authViewModel.shopDataModel.ownerName = ownerNameEditText.text.toString()
+                    authViewModel.shopDataModel.address = shopAddressEditText.text.toString()
+                    authViewModel.shopDataModel.email = shopEmailEditText.text.toString()
+                    authViewModel.shopDataModel.city = cityEditText.text.toString()
+                    authViewModel.shopDataModel.state = stateEditText.text.toString()
+                    authViewModel.shopDataModel.country = countryEditText.text.toString()
+                    authViewModel.shopDataModel.pinCode = pinCodeEditText.text.toString()
 
                     authViewModel.authRepository.getFirebaseUser()!!
-                        .updateEmail(userData.email.toString())
+                        .updateEmail(authViewModel.shopDataModel.email.toString())
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Log.d(TAG, "User email address updated.")
@@ -140,28 +166,11 @@ class ShopDetails : Fragment(), View.OnClickListener {
                                             Log.d(TAG, "Email sent.")
                                             Snackbar.make(
                                                 requireActivity().findViewById(android.R.id.content),
-                                                "Please verify your email account to proceed",
+                                                "Verification email sent, please check after finishing your signup",
                                                 Snackbar.LENGTH_LONG
                                             ).show()
-                                            authViewModel.authRepository.createEndUserDataObject(
-                                                userData,
-                                                object : AuthRepository.UserDataInterface {
-                                                    override fun onUploadCallback(success: Boolean) {
-                                                        if (success) {
-                                                            authViewModel.authRepository.createEndUserAuthObject()
-                                                            localView.findNavController()
-                                                                .navigate(R.id.login)
-                                                        } else {
-                                                            Snackbar.make(
-                                                                requireActivity().findViewById(
-                                                                    android.R.id.content
-                                                                ),
-                                                                "Unable to sign you up at this time",
-                                                                Snackbar.LENGTH_LONG
-                                                            ).show()
-                                                        }
-                                                    }
-                                                })
+                                            localView.findNavController()
+                                                .navigate(R.id.action_shopDetails_to_shopIDInfo)
                                         } else {
                                             Log.d(TAG, "Failure : ${task.result.toString()}")
                                             Snackbar.make(
@@ -169,7 +178,7 @@ class ShopDetails : Fragment(), View.OnClickListener {
                                                 "Email address does not exist",
                                                 Snackbar.LENGTH_LONG
                                             ).show()
-                                            userEmailField.error = "Invalid email"
+                                            shopEmailEditText.error = "Invalid email"
                                         }
                                     }
                             } else {
@@ -178,11 +187,25 @@ class ShopDetails : Fragment(), View.OnClickListener {
                                     "Email address does not exist",
                                     Snackbar.LENGTH_LONG
                                 ).show()
-                                userEmailField.error = "Invalid email"
+                                shopEmailEditText.error = "Invalid email"
                             }
                         }
 
                 }
+            }
+        }
+    }
+
+    override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
+        when (checkedId) {
+            R.id.maleRadioButton -> {
+                authViewModel.shopDataModel.gender = GENDER_MALE
+            }
+            R.id.femaleRadioButton -> {
+                authViewModel.shopDataModel.gender = GENDER_FEMALE
+            }
+            R.id.othersRadioButton -> {
+                authViewModel.shopDataModel.gender = GENDER_OTHERS
             }
         }
     }

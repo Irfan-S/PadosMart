@@ -25,6 +25,10 @@ import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
+import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
+import espl.apps.padosmart.utils.END_USER
+import espl.apps.padosmart.utils.NEW_USER
+import espl.apps.padosmart.utils.SHOP_USER
 import espl.apps.padosmart.viewmodels.AuthViewModel
 import java.util.concurrent.TimeUnit
 
@@ -45,7 +49,6 @@ class Login : Fragment(), View.OnClickListener {
     lateinit var buttonResend: Button
     lateinit var fieldPhoneNumber: EditText
     lateinit var fieldVerificationCode: EditText
-    lateinit var shopSignupButton: Button
 
     lateinit var countryCodePicker: CountryCodePicker
 
@@ -77,10 +80,8 @@ class Login : Fragment(), View.OnClickListener {
         buttonStartVerification = localView.findViewById<Button>(R.id.buttonStartVerification)
         buttonVerifyPhone = localView.findViewById<Button>(R.id.buttonVerifyPhone)
         buttonResend = localView.findViewById<Button>(R.id.buttonResend)
-        shopSignupButton = localView.findViewById(R.id.buttonShopSignUp)
 
         //Assign click listeners
-        shopSignupButton.setOnClickListener(this)
         buttonStartVerification.setOnClickListener(this)
         buttonVerifyPhone.setOnClickListener(this)
         buttonResend.setOnClickListener(this)
@@ -239,20 +240,20 @@ class Login : Fragment(), View.OnClickListener {
                             if (task.result!!.user!!.isEmailVerified) {
                                 Log.d(TAG, "Email verified user logging in")
                                 when (response) {
-                                    authViewModel.authRepository.END_USER.toLong() -> {
+                                    END_USER.toLong() -> {
                                         Log.d(TAG, "User type: END_USER")
                                         val intent =
                                             Intent(requireContext(), EndUserBase::class.java)
                                         startActivity(intent)
                                         requireActivity().finish()
                                     }
-                                    authViewModel.authRepository.SHOP_USER.toLong() -> {
+                                    SHOP_USER.toLong() -> {
                                         Log.d(TAG, "User type: SHOP_USER")
                                         val intent = Intent(requireContext(), ShopBase::class.java)
                                         startActivity(intent)
                                         requireActivity().finish()
                                     }
-                                    authViewModel.authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                                    AUTH_ACCESS_FAILED.toLong() -> {
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
                                             "Unable to sign you in",
@@ -262,7 +263,7 @@ class Login : Fragment(), View.OnClickListener {
                                 }
                             } else {
                                 when (response) {
-                                    authViewModel.authRepository.END_USER.toLong() -> {
+                                    END_USER.toLong() -> {
                                         Log.d(TAG, "User type: END_USER unverified")
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
@@ -270,7 +271,7 @@ class Login : Fragment(), View.OnClickListener {
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
-                                    authViewModel.authRepository.NEW_USER.toLong() -> {
+                                    NEW_USER.toLong() -> {
                                         Log.d(TAG, "User type: NEW_USER")
                                         authViewModel.userData.phone = phoneNumber
                                         localView.findNavController().navigate(R.id.userSignup)
@@ -393,9 +394,6 @@ class Login : Fragment(), View.OnClickListener {
                 resendVerificationCode(
                     phoneNumber!!, mResendToken
                 )
-            }
-            R.id.buttonShopSignUp -> {
-                view.findNavController().navigate(R.id.shopDetails)
             }
         }
     }

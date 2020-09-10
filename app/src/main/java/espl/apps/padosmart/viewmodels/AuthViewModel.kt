@@ -4,6 +4,7 @@ import android.app.Application
 import android.location.Address
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.services.LocationService
@@ -13,6 +14,7 @@ class AuthViewModel(app: Application) : AndroidViewModel(app) {
 
     val authRepository = AuthRepository(app)
     var userData: UserDataModel = UserDataModel()
+    var shopDataModel = ShopDataModel()
 
     var locationService: LocationService? = null
 
