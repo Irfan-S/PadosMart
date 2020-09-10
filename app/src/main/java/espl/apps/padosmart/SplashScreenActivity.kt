@@ -10,6 +10,9 @@ import espl.apps.padosmart.bases.AuthBase
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
+import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
+import espl.apps.padosmart.utils.END_USER
+import espl.apps.padosmart.utils.SHOP_USER
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -46,19 +49,19 @@ class SplashScreenActivity : AppCompatActivity() {
                     override fun onAuthCallback(response: Long) {
                         Log.d(TAG, "User data fetched with response: $response")
                         when (response) {
-                            authRepository.END_USER.toLong() -> {
+                            END_USER.toLong() -> {
                                 Log.d(TAG, "User type: END_USER")
                                 intent = Intent(applicationContext, EndUserBase::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            authRepository.SHOP_USER.toLong() -> {
+                            SHOP_USER.toLong() -> {
                                 Log.d(TAG, "User type: SHOP_USER")
                                 intent = Intent(applicationContext, ShopBase::class.java)
                                 startActivity(intent)
                                 finish()
                             }
-                            authRepository.AUTH_ACCESS_FAILED.toLong() -> {
+                            AUTH_ACCESS_FAILED.toLong() -> {
                                 Snackbar.make(
                                     findViewById(android.R.id.content), "Unable to sign you in",
                                     Snackbar.LENGTH_LONG

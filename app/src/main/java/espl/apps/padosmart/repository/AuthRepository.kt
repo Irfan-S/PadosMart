@@ -2,6 +2,7 @@ package espl.apps.padosmart.repository
 
 import android.content.Context
 import android.util.Log
+import com.esafirm.imagepicker.model.Image
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
@@ -10,15 +11,20 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.ktx.storage
 import espl.apps.padosmart.R
+import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.utils.NEW_USER
+import espl.apps.padosmart.utils.SHOP_UNVERIFIED
+import java.util.*
 
 
-class AuthRepository(context: Context) {
-
+class AuthRepository(private var context: Context) {
 
 
     private val TAG = "CoreRepository"
@@ -29,15 +35,15 @@ class AuthRepository(context: Context) {
 
     private var user: FirebaseUser?
 
-    private var context: Context
+    private val firebaseStorage: FirebaseStorage
 
 
     init {
-        this.context = context
         firebaseAuthDatabaseReference =
             Firebase.database.getReference(context.getString(R.string.firebase_user_access_node))
         mAuth = FirebaseAuth.getInstance()
         user = mAuth.currentUser
+        firebaseStorage = Firebase.storage
     }
 
     /**
@@ -79,6 +85,59 @@ class AuthRepository(context: Context) {
             callback.onUploadCallback(false)
         }
 
+    }
+
+    fun createShopUserAuthObject() {
+        if (user != null) {
+            firebaseAuthDatabaseReference.child(user!!.uid).setValue(SHOP_UNVERIFIED)
+            Log.d(TAG, "New shop successfully added to database")
+        } else {
+            Log.d(TAG, "Unable to add new shop to database")
+        }
+    }
+
+    fun createShopDataObject(shopData: ShopDataModel, callback: UserDataInterface) {
+        val dbr =
+            Firebase.database.getReference("shop_data_node")
+
+        dbr.child(user!!.uid).setValue(shopData).addOnCompleteListener {
+            Log.d(TAG, "Successfully created a shop data object")
+            callback.onUploadCallback(true)
+        }.addOnFailureListener {
+            Log.d(TAG, "Failed to create a shop data object")
+            callback.onUploadCallback(false)
+        }
+
+    }
+
+    fun uploadAuthImages(images: List<Image>, callback: ShopAuthURIInterface) {
+        val path = "authdata/" + user!!.phoneNumber
+        for (image in images) {
+            val imgPath = path + "/" + UUID.randomUUID()
+            val ref = firebaseStorage.reference.child(imgPath)
+            ref.putFile(image.uri).addOnCompleteListener {
+                callback.onUploadCallback(ref, success = true)
+            }.addOnFailureListener {
+            }.addOnFailureListener {
+                callback.onUploadCallback(null, false)
+            }
+        }
+    }
+
+    fun uploadShopImages(images: List<Image>, callback: ShopImgURIInterface) {
+        val path = "shopinfo/" + user!!.phoneNumber
+        for (image in images) {
+            val imgPath = path + "/" + UUID.randomUUID()
+            val ref = firebaseStorage.reference.child(imgPath)
+            ref.putFile(image.uri).addOnCompleteListener {
+                Log.d(TAG, "Upload completed for user image")
+                callback.onUploadCallback(ref, success = true)
+
+            }.addOnFailureListener {
+                callback.onUploadCallback(null, false)
+            }
+
+        }
     }
 
     /**
@@ -128,6 +187,14 @@ class AuthRepository(context: Context) {
 
     interface UserDataInterface {
         fun onUploadCallback(success: Boolean)
+    }
+
+    interface ShopAuthURIInterface {
+        fun onUploadCallback(reference: StorageReference?, success: Boolean)
+    }
+
+    interface ShopImgURIInterface {
+        fun onUploadCallback(reference: StorageReference?, success: Boolean)
     }
 
 }

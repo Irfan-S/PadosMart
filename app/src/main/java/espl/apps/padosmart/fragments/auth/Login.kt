@@ -25,10 +25,7 @@ import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
-import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
-import espl.apps.padosmart.utils.END_USER
-import espl.apps.padosmart.utils.NEW_USER
-import espl.apps.padosmart.utils.SHOP_USER
+import espl.apps.padosmart.utils.*
 import espl.apps.padosmart.viewmodels.AuthViewModel
 import java.util.concurrent.TimeUnit
 
@@ -252,6 +249,14 @@ class Login : Fragment(), View.OnClickListener {
                                         val intent = Intent(requireContext(), ShopBase::class.java)
                                         startActivity(intent)
                                         requireActivity().finish()
+                                    }
+                                    SHOP_UNVERIFIED.toLong() -> {
+                                        Log.d(TAG, "User type: SHOP unverified")
+                                        Snackbar.make(
+                                            requireActivity().findViewById(android.R.id.content),
+                                            "Your shop account has not been verified, please wait",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
                                     }
                                     AUTH_ACCESS_FAILED.toLong() -> {
                                         Snackbar.make(

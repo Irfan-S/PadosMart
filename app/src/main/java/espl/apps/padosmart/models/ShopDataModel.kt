@@ -19,7 +19,7 @@ data class ShopDataModel(
     var shopImageURL: String? = null,
     var shopVerificationImageURL: String? = null,
     var shopDeliveryRadius: Int? = null,
-    var shopDeliveryStart: String? = null,
-    var shopDeliveryEnd: String? = null,
+    var shopDeliveryStart: Long? = null,
+    var shopDeliveryEnd: Long? = null,
     var shopDeliveryCosts: Double? = null,
 ) : Parcelable

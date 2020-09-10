@@ -28,7 +28,7 @@
         android:label="shopDetails"
         tools:layout="@layout/fragment_signup_shop_details">
         <action
-            android:id="@+id/action_shopSignup_to_shopDetails"
+            android:id="@+id/action_shopDetails_to_shopIDInfo"
             app:destination="@id/shopIDInfo" />
     </fragment>
     <fragment

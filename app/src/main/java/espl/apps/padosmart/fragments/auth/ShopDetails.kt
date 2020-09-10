@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -31,12 +32,13 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
     lateinit var authViewModel: AuthViewModel
 
     lateinit var locationButton: Button
+
     lateinit var continueButton: Button
 
     //Initialize views
     lateinit var shopNameEditText: EditText
     lateinit var ownerNameEditText: EditText
-    lateinit var shopNumberEditText: EditText
+    lateinit var shopNumberTextView: TextView
     lateinit var shopEmailEditText: EditText
     lateinit var shopAddressEditText: EditText
 
@@ -61,7 +63,8 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
 
         shopNameEditText = localView.findViewById(R.id.shopNameField)
         ownerNameEditText = localView.findViewById(R.id.shopOwnerField)
-        shopNumberEditText = localView.findViewById(R.id.shopNumberTextView)
+        shopNumberTextView = localView.findViewById(R.id.shopNumberTextView)
+        shopNumberTextView.text = authViewModel.shopDataModel.phone
         shopEmailEditText = localView.findViewById(R.id.shopEmailField)
         shopAddressEditText = localView.findViewById(R.id.shopAddressField)
 
@@ -110,10 +113,6 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
         if (TextUtils.isEmpty(ownerNameEditText.text)) {
             flag = false
             ownerNameEditText.error = "Invalid name"
-        }
-        if (TextUtils.isEmpty(shopNumberEditText.text)) {
-            flag = false
-            shopNumberEditText.error = "Invalid mobile"
         }
 
         return flag
