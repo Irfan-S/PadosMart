@@ -56,6 +56,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:19.4.0'
     implementation 'com.google.firebase:firebase-database-ktx:19.4.0'
 
+    //Firebase Firestore
+    implementation 'com.google.firebase:firebase-firestore-ktx:21.6.0'
+
     //Firebase storage
     implementation 'com.google.firebase:firebase-storage-ktx:19.2.0'
 

@@ -24,7 +24,9 @@ import com.hbb20.CountryCodePicker
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.EndUserBase
 import espl.apps.padosmart.bases.ShopBase
+import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.repository.AuthRepository
+import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.utils.*
 import espl.apps.padosmart.viewmodels.AuthViewModel
 import java.util.concurrent.TimeUnit
@@ -226,6 +228,7 @@ class Login : Fragment(), View.OnClickListener {
                 requireActivity()
             ) { task ->
                 if (task.isSuccessful) {
+
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
 
@@ -258,6 +261,58 @@ class Login : Fragment(), View.OnClickListener {
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
+                                    SHOP_INIT_LOGIN.toLong() -> {
+                                        Log.d(TAG, "User type: SHOP initialization")
+                                        authViewModel.authRepository.fetchShopDataObject(object :
+                                            AuthRepository.ShopDataFetch {
+                                            override fun onFetchComplete(shopDataModel: ShopDataModel?) {
+                                                if (shopDataModel != null) {
+                                                    authViewModel.fireStoreRepository.uploadShopDetails(
+                                                        shopDataModel,
+                                                        object :
+                                                            FirestoreRepository.onAuthFirestoreCallback {
+                                                            override fun onUploadSuccessful(id: String?) {
+                                                                if (id != null) {
+                                                                    shopDataModel.shopID = id
+                                                                    authViewModel.authRepository.createShopDataObject(
+                                                                        shopDataModel,
+                                                                        callback = object :
+                                                                            AuthRepository.UserDataInterface {
+                                                                            override fun onUploadCallback(
+                                                                                success: Boolean
+                                                                            ) {
+                                                                                if (success) {
+                                                                                    authViewModel.authRepository.createShopUserAuthObject(
+                                                                                        SHOP_USER
+                                                                                    )
+                                                                                    val intent =
+                                                                                        Intent(
+                                                                                            requireContext(),
+                                                                                            ShopBase::class.java
+                                                                                        )
+                                                                                    startActivity(
+                                                                                        intent
+                                                                                    )
+                                                                                    requireActivity().finish()
+                                                                                } else {
+                                                                                    Snackbar.make(
+                                                                                        requireActivity().findViewById(
+                                                                                            android.R.id.content
+                                                                                        ),
+                                                                                        "Unable to sign you in",
+                                                                                        Snackbar.LENGTH_LONG
+                                                                                    ).show()
+                                                                                }
+                                                                            }
+                                                                        })
+                                                                }
+                                                            }
+                                                        })
+                                                }
+                                            }
+                                        })
+
+                                    }
                                     AUTH_ACCESS_FAILED.toLong() -> {
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
@@ -268,18 +323,18 @@ class Login : Fragment(), View.OnClickListener {
                                 }
                             } else {
                                 when (response) {
-                                    END_USER.toLong() -> {
-                                        Log.d(TAG, "User type: END_USER unverified")
+                                    NEW_USER.toLong() -> {
+                                        Log.d(TAG, "User type: NEW_USER")
+                                        authViewModel.userData.phone = phoneNumber
+                                        localView.findNavController().navigate(R.id.userSignup)
+                                    }
+                                    else -> {
+                                        Log.d(TAG, "User type: unverified")
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
                                             "Please verify your email and try again",
                                             Snackbar.LENGTH_LONG
                                         ).show()
-                                    }
-                                    NEW_USER.toLong() -> {
-                                        Log.d(TAG, "User type: NEW_USER")
-                                        authViewModel.userData.phone = phoneNumber
-                                        localView.findNavController().navigate(R.id.userSignup)
                                     }
                                 }
                             }

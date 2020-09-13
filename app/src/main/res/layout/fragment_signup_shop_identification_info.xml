@@ -59,18 +59,6 @@
         app:layout_constraintTop_toBottomOf="@+id/textView6"
         app:layout_constraintVertical_bias="0.0" />
 
-    <EditText
-        android:id="@+id/deliveryRadiusEditText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="Delivery Radius"
-        android:inputType="number"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/documentDisplaySelector"
-        app:layout_constraintVertical_bias="0.365" />
-
     <Button
         android:id="@+id/continueButton"
         android:layout_width="wrap_content"
@@ -79,7 +67,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/deliveryRadiusEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/documentDisplaySelector" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -32,7 +31,6 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
 
     lateinit var profileDisplaySelector: ImageView
     lateinit var proofImageSelector: ImageView
-    lateinit var deliveryEditText: EditText
 
     lateinit var continueButton: Button
 
@@ -49,17 +47,14 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                 false
             ) as View
 
-        //TODO complete implementation
 
         profileDisplaySelector = localView.findViewById(R.id.imageDisplaySelector)
         proofImageSelector = localView.findViewById(R.id.documentDisplaySelector)
-        deliveryEditText = localView.findViewById(R.id.deliveryRadiusEditText)
         continueButton = localView.findViewById(R.id.continueButton)
 
         proofImageSelector.setOnClickListener(this)
         profileDisplaySelector.setOnClickListener(this)
         continueButton.setOnClickListener(this)
-
 
         authViewModel = activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
 

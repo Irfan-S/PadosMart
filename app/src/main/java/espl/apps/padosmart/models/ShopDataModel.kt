@@ -16,10 +16,10 @@ data class ShopDataModel(
     var country: String? = null,
     var DOB: String? = null,
     var gender: Int? = null,
+    var shopID: String? = null,
     var shopImageURL: String? = null,
     var shopVerificationImageURL: String? = null,
-    var shopDeliveryRadius: Int? = null,
     var shopDeliveryStart: Long? = null,
+    var doesShopDeliver: Boolean? = false,
     var shopDeliveryEnd: Long? = null,
-    var shopDeliveryCosts: Double? = null,
 ) : Parcelable

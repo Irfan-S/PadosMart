@@ -22,6 +22,8 @@ import espl.apps.padosmart.utils.GENDER_FEMALE
 import espl.apps.padosmart.utils.GENDER_MALE
 import espl.apps.padosmart.utils.GENDER_OTHERS
 import espl.apps.padosmart.viewmodels.AuthViewModel
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChangeListener {
 
@@ -97,7 +99,20 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
     }
 
     private fun areShopDetailsValid(): Boolean {
+        val regex = "^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$"
+        val pattern: Pattern = Pattern.compile(regex)
+
         var flag = true
+        if (TextUtils.isEmpty(dobEditText.text)) {
+            flag = false
+            dobEditText.error = "DOB cannot be empty"
+        } else {
+            val matcher: Matcher = pattern.matcher(dobEditText.text.toString())
+            if (!matcher.matches()) {
+                flag = false
+                dobEditText.error = "Invalid DOB"
+            }
+        }
         if (TextUtils.isEmpty(shopNameEditText.text)) {
             flag = false
             shopNameEditText.error = "Invalid name"
@@ -114,7 +129,6 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
             flag = false
             ownerNameEditText.error = "Invalid name"
         }
-
         return flag
     }
 

@@ -10,6 +10,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -20,14 +21,13 @@ import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.utils.NEW_USER
-import espl.apps.padosmart.utils.SHOP_UNVERIFIED
 import java.util.*
 
 
 class AuthRepository(private var context: Context) {
 
 
-    private val TAG = "CoreRepository"
+    private val TAG = "AuthRepository"
 
     private val firebaseAuthDatabaseReference: DatabaseReference
 
@@ -40,7 +40,7 @@ class AuthRepository(private var context: Context) {
 
     init {
         firebaseAuthDatabaseReference =
-            Firebase.database.getReference(context.getString(R.string.firebase_user_access_node))
+            Firebase.database.getReference(context.getString(R.string.firebase_access_permission_node))
         mAuth = FirebaseAuth.getInstance()
         user = mAuth.currentUser
         firebaseStorage = Firebase.storage
@@ -87,9 +87,9 @@ class AuthRepository(private var context: Context) {
 
     }
 
-    fun createShopUserAuthObject() {
+    fun createShopUserAuthObject(shopAuthType: Int) {
         if (user != null) {
-            firebaseAuthDatabaseReference.child(user!!.uid).setValue(SHOP_UNVERIFIED)
+            firebaseAuthDatabaseReference.child(user!!.uid).setValue(shopAuthType)
             Log.d(TAG, "New shop successfully added to database")
         } else {
             Log.d(TAG, "Unable to add new shop to database")
@@ -98,8 +98,7 @@ class AuthRepository(private var context: Context) {
 
     fun createShopDataObject(shopData: ShopDataModel, callback: UserDataInterface) {
         val dbr =
-            Firebase.database.getReference("shop_data_node")
-
+            Firebase.database.getReference(context.getString(R.string.firebase_shop_data_node))
         dbr.child(user!!.uid).setValue(shopData).addOnCompleteListener {
             Log.d(TAG, "Successfully created a shop data object")
             callback.onUploadCallback(true)
@@ -110,8 +109,34 @@ class AuthRepository(private var context: Context) {
 
     }
 
+    //TODO add checks in place for sending verified data over once complete. Streamline data flow instead of multiple callback nested loops.
+
+    fun fetchShopDataObject(callback: ShopDataFetch) {
+        val dbr =
+            Firebase.database.getReference(context.getString(R.string.firebase_shop_data_node))
+                .child(user!!.uid)
+
+        var respModel: ShopDataModel?
+
+        val shopObjectListener = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                respModel = null
+                callback.onFetchComplete(respModel)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                Log.d(TAG, "Shop found with response ${p0.value}")
+                respModel = p0.getValue<ShopDataModel>()
+                callback.onFetchComplete(respModel)
+            }
+
+        }
+
+        dbr.addListenerForSingleValueEvent(shopObjectListener)
+    }
+
     fun uploadAuthImages(images: List<Image>, callback: ShopAuthURIInterface) {
-        val path = "authdata/" + user!!.phoneNumber
+        val path = context.getString(R.string.storage_authdata) + user!!.phoneNumber
         for (image in images) {
             val imgPath = path + "/" + UUID.randomUUID()
             val ref = firebaseStorage.reference.child(imgPath)
@@ -125,7 +150,7 @@ class AuthRepository(private var context: Context) {
     }
 
     fun uploadShopImages(images: List<Image>, callback: ShopImgURIInterface) {
-        val path = "shopinfo/" + user!!.phoneNumber
+        val path = context.getString(R.string.storage_shopinfo) + user!!.phoneNumber
         for (image in images) {
             val imgPath = path + "/" + UUID.randomUUID()
             val ref = firebaseStorage.reference.child(imgPath)
@@ -195,6 +220,10 @@ class AuthRepository(private var context: Context) {
 
     interface ShopImgURIInterface {
         fun onUploadCallback(reference: StorageReference?, success: Boolean)
+    }
+
+    interface ShopDataFetch {
+        fun onFetchComplete(shopDataModel: ShopDataModel?)
     }
 
 }

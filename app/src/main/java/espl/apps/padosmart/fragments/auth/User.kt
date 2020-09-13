@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.AuthBase
 import espl.apps.padosmart.models.UserDataModel
@@ -152,8 +153,6 @@ class User: Fragment(), View.OnClickListener {
             }
             R.id.submitDetailsButton -> {
                 if (areUserDetailsValid()) {
-
-                    //TODO verifying user data
                     userData.name = userNameField.text.toString()
                     userData.address = userAddressField.text.toString()
                     userData.email = userEmailField.text.toString()
@@ -161,7 +160,6 @@ class User: Fragment(), View.OnClickListener {
                     userData.state = userStateField.text.toString()
                     userData.country = userCountryField.text.toString()
                     userData.pinCode = userPinCodeField.text.toString()
-
                     authViewModel.authRepository.getFirebaseUser()!!
                         .updateEmail(userData.email.toString())
                         .addOnCompleteListener { task ->
@@ -207,12 +205,21 @@ class User: Fragment(), View.OnClickListener {
                                         }
                                     }
                             } else {
-                                Snackbar.make(
-                                    requireActivity().findViewById(android.R.id.content),
-                                    "Email address does not exist",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                                userEmailField.error = "Invalid email"
+                                if (task.exception is FirebaseAuthUserCollisionException) {
+                                    Snackbar.make(
+                                        requireActivity().findViewById(android.R.id.content),
+                                        "Email address already in use",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
+                                    userEmailField.error = "Email already exists"
+                                } else {
+                                    Snackbar.make(
+                                        requireActivity().findViewById(android.R.id.content),
+                                        "Email address does not exist",
+                                        Snackbar.LENGTH_LONG
+                                    ).show()
+                                    userEmailField.error = "Invalid email"
+                                }
                             }
                         }
 
