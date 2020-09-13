@@ -6,54 +6,70 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
+import espl.apps.padosmart.utils.ORDER_STATUS_CANCELLED
+import espl.apps.padosmart.utils.ORDER_STATUS_DELIVERED
+import espl.apps.padosmart.utils.ORDER_STATUS_IN_PROGRESS
+import espl.apps.padosmart.utils.QUERY_ARG_USER
 import java.lang.ref.WeakReference
 
 class OrderHistoryAdapter(
+    private val orderType: String,
     private val orderList: ArrayList<OrderDataModel>,
     private val buttonListener: ButtonListener
 ) :
-    RecyclerView.Adapter<ExerciseRecyclerAdapter.GIFHolder>() {
+    RecyclerView.Adapter<OrderHistoryAdapter.OrderHolder>() {
 
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): GIFHolder {
+    ): OrderHolder {
         val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.element_exercise_display, parent, false)
-        return GIFHolder(v, buttonListener)
+            .inflate(R.layout.element_order_list_tile, parent, false)
+        return OrderHolder(v, buttonListener)
     }
 
     override fun getItemCount(): Int {
-        return exerciseList.size
+        return orderList.size
     }
 
-    override fun onBindViewHolder(holder: GIFHolder, position: Int) {
-        holder.bindItems(exerciseList[position])
+    override fun onBindViewHolder(holder: OrderHolder, position: Int) {
+        holder.bindItems(orderList[position])
     }
 
     /**
      * Uses interface class to abstract out click listener to classes that can handle it. i.ExercisesFragment
      */
 
-    inner class GIFHolder(itemView: View, private val listener: ButtonListener) :
+    inner class OrderHolder(itemView: View, private val listener: ButtonListener) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
         private var listenerRef: WeakReference<ButtonListener>? = null
-        fun bindItems(exercise: Exercise) {
-            val gifView = itemView.findViewById(R.id.exercise_gif_360_display) as GifImageView
-            val textViewNumber = itemView.findViewById(R.id.exercise_number_txtview) as TextView
-            val textViewShortDesc =
-                itemView.findViewById(R.id.exercise_description_txtview) as TextView
+        fun bindItems(order: OrderDataModel) {
+
+            val name = if (orderType == QUERY_ARG_USER) {
+                order.shopName
+            } else {
+                order.customerName
+            }
+
+            val nameTextView = itemView.findViewById(R.id.nameTextView) as TextView
+            nameTextView.text = name
+            val shopStatusTextView = itemView.findViewById(R.id.orderStatusText) as TextView
+
+            shopStatusTextView.text = when (order.orderStatus) {
+                ORDER_STATUS_DELIVERED -> "delivered"
+                ORDER_STATUS_CANCELLED -> "cancelled"
+                ORDER_STATUS_IN_PROGRESS -> "In progress"
+                else -> "N/A"
+            }
+
             listenerRef = WeakReference(listener)
 
-            val startExerciseButton = itemView.findViewById<Button>(R.id.start_exercise_button)
-            startExerciseButton.setOnClickListener(this)
-
-            gifView.setImageResource(exercise.ID360)
-            textViewNumber.text = exercise.name
-            textViewShortDesc.text = exercise.shortDescription
+            val orderDetailsButton = itemView.findViewById<Button>(R.id.viewDetailsButton)
+            orderDetailsButton.setOnClickListener(this)
 
 
         }

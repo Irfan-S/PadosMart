@@ -6,12 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
 import espl.apps.padosmart.adapters.OrderHistoryAdapter
+import espl.apps.padosmart.models.OrderDataModel
+import espl.apps.padosmart.utils.QUERY_ARG_USER
 import espl.apps.padosmart.viewmodels.OrdersViewModel
 
 class UserOrders : Fragment() {
@@ -31,28 +33,40 @@ class UserOrders : Fragment() {
 
         linearLayoutManager = LinearLayoutManager(requireContext())
 
-
+        var ordersList: ArrayList<OrderDataModel>? = ArrayList()
         val orderViewModel: OrdersViewModel =
             ViewModelProvider(this).get(OrdersViewModel::class.java)
-        val ordersList = orderViewModel.getOrderList()
-
+        orderViewModel.getOrdersList(
+            orderViewModel.authRepository.getFirebaseUser()!!.uid,
+            QUERY_ARG_USER
+        )
         val exerciseRecyclerView: RecyclerView = view.findViewById(R.id.ordersRecyclerView)
         exerciseRecyclerView.layoutManager = linearLayoutManager
-
-
-        val adapter =
-            OrderHistoryAdapter(orderList = ordersList, object :
-                OrderHistoryAdapter.ButtonListener {
-                override fun onButtonClick(position: Int) {
-
-                    //TODO animate transition of exercise with sharedwindowtransition(?)
-                    Log.d(TAG, "Option selected is ${ordersList[position].orderID}")
-                    val exerciseSelected = ordersList[position]
-                    val action = ExercisesFragmentDirections.viewExerciseAction(exerciseSelected)
-                    findNavController().navigate(action)
+        val ordersObserver =
+            Observer<ArrayList<OrderDataModel>> { _ ->
+                run {
+                    ordersList = orderViewModel.ordersList.value
+                    exerciseRecyclerView.adapter?.notifyDataSetChanged()
                 }
-            })
-        exerciseRecyclerView.adapter = adapter
+            }
+
+        if (!ordersList.isNullOrEmpty()) {
+            //show empty screen
+        } else {
+            val adapter =
+                OrderHistoryAdapter(QUERY_ARG_USER, orderList = ordersList!!, object :
+                    OrderHistoryAdapter.ButtonListener {
+                    override fun onButtonClick(position: Int) {
+
+                        //TODO animate transition of exercise with sharedwindowtransition(?)
+                        Log.d(TAG, "Option selected is ${ordersList!![position].orderID}")
+                        orderViewModel.selectedOrder = ordersList!![position]
+
+//                    findNavController().navigate(action)
+                    }
+                })
+            exerciseRecyclerView.adapter = adapter
+        }
 
         return view
     }

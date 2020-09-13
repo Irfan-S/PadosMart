@@ -270,7 +270,7 @@ class Login : Fragment(), View.OnClickListener {
                                                     authViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :
-                                                            FirestoreRepository.onAuthFirestoreCallback {
+                                                            FirestoreRepository.OnAuthFirestoreCallback {
                                                             override fun onUploadSuccessful(id: String?) {
                                                                 if (id != null) {
                                                                     shopDataModel.shopID = id
