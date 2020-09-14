@@ -1,6 +1,7 @@
 package espl.apps.padosmart.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -39,7 +40,26 @@ class FirestoreRepository(private var context: Context) {
             .addOnCompleteListener {
                 callback.onUploadSuccessful(it.result?.id)
             }.addOnFailureListener {
-            callback.onUploadSuccessful(null)
+                callback.onUploadSuccessful(null)
+            }
+    }
+
+    /**
+     * Fetches all shops in the firestore database
+     */
+    fun fetchShops(onShopsFetched: OnShopsFetched) {
+        fireStoreDB.collection(context.getString(R.string.firestore_shops)).get()
+            .addOnSuccessListener { documents ->
+                Log.d(TAG, "Fetching all shop data")
+                val shopsList: ArrayList<ShopDataModel> = ArrayList()
+                for (document in documents) {
+                    shopsList.add(document.toObject<ShopDataModel>())
+                    Log.d(TAG, shopsList.toString())
+                }
+                Log.d(TAG, "Length: ${shopsList.size}")
+                onShopsFetched.onSuccess(shopsList)
+            }.addOnFailureListener {
+            onShopsFetched.onSuccess(ArrayList())
         }
     }
 
@@ -80,6 +100,10 @@ class FirestoreRepository(private var context: Context) {
 
     interface OnOrdersFetched {
         fun onSuccess(orderList: ArrayList<OrderDataModel>)
+    }
+
+    interface OnShopsFetched {
+        fun onSuccess(shopList: ArrayList<ShopDataModel>)
     }
 
 }
