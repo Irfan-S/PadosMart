@@ -178,6 +178,10 @@ class AuthRepository(private var context: Context) {
         this.user = user
     }
 
+    fun signOut() {
+        mAuth.signOut()
+    }
+
 
     fun getFirebaseUserType(callback: AuthDataInterface) {
         Log.d(TAG, "Searching database for user.")

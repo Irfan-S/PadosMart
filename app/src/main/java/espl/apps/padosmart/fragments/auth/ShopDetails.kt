@@ -16,6 +16,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.AuthBase
 import espl.apps.padosmart.utils.GENDER_FEMALE
@@ -195,12 +197,27 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
                                         }
                                     }
                             } else {
-                                Snackbar.make(
-                                    requireActivity().findViewById(android.R.id.content),
-                                    "Email address does not exist",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                                shopEmailEditText.error = "Invalid email"
+                                try {
+                                    Log.d(TAG, "Error raised: ${task.exception}")
+                                    throw task.exception!!
+                                } catch (e: FirebaseAuthException) {
+                                    if (e is FirebaseAuthUserCollisionException) {
+                                        Snackbar.make(
+                                            requireActivity().findViewById(android.R.id.content),
+                                            "Email address already in use",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                        shopEmailEditText.error = "Email exists"
+                                    } else {
+                                        Snackbar.make(
+                                            requireActivity().findViewById(android.R.id.content),
+                                            "Email address does not exist",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                        shopEmailEditText.error = "Invalid email"
+                                    }
+                                }
+
                             }
                         }
 

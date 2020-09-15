@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@id/shopCurrentOrders"
+        android:icon="@android:drawable/ic_dialog_dialer"
+        android:title="Current Orders" />
+    <item
+        android:id="@id/shopNewOrders"
+        android:icon="@android:drawable/stat_notify_voicemail"
+        android:title="New Orders" />
+    <item
+        android:id="@id/shopOldOrders"
+        android:icon="?attr/actionModeCutDrawable"
+        android:title="Old Orders" />
+</menu>

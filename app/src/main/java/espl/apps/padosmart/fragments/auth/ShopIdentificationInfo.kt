@@ -29,6 +29,8 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
 
     var shopImage: Boolean = false
 
+    var allDetailsValid = true
+
     lateinit var profileDisplaySelector: ImageView
     lateinit var proofImageSelector: ImageView
 
@@ -75,7 +77,18 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
             }
             R.id.continueButton -> {
 
-                localView.findNavController().navigate(R.id.action_shopIDInfo_to_shopDeliveryInfo)
+                if (allDetailsValid) {
+                    localView.findNavController()
+                        .navigate(R.id.action_shopIDInfo_to_shopDeliveryInfo)
+                } else {
+                    Snackbar.make(
+                        requireActivity().findViewById(
+                            android.R.id.content
+                        ),
+                        "Unable to proceed, please try again later",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -96,13 +109,14 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                             if (success) {
                                 reference!!.downloadUrl.addOnCompleteListener {
                                     if (it.isSuccessful) {
+                                        allDetailsValid = true
                                         val downloadUri = it.result
                                         authViewModel.shopDataModel.shopImageURL =
                                             downloadUri.toString()
                                         Glide.with(requireContext()).load(images[0].uri)
                                             .into(profileDisplaySelector)
                                     } else {
-                                        authViewModel.shopDataModel.shopImageURL = null
+                                        allDetailsValid = false
                                         Snackbar.make(
                                             requireActivity().findViewById(
                                                 android.R.id.content
@@ -115,6 +129,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                                     }
                                 }
                             } else {
+                                allDetailsValid = false
                                 Snackbar.make(
                                     requireActivity().findViewById(
                                         android.R.id.content
@@ -136,13 +151,14 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                             if (success) {
                                 reference!!.downloadUrl.addOnCompleteListener {
                                     if (it.isSuccessful) {
+                                        allDetailsValid = true
                                         val downloadUri = it.result
                                         authViewModel.shopDataModel.shopVerificationImageURL =
                                             downloadUri.toString()
                                         Glide.with(requireContext()).load(images[0].uri)
                                             .into(proofImageSelector)
                                     } else {
-                                        authViewModel.shopDataModel.shopVerificationImageURL = null
+                                        allDetailsValid = false
                                         Snackbar.make(
                                             requireActivity().findViewById(
                                                 android.R.id.content
@@ -155,6 +171,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                                     }
                                 }
                             } else {
+                                allDetailsValid = false
                                 Snackbar.make(
                                     requireActivity().findViewById(
                                         android.R.id.content

@@ -138,7 +138,7 @@ class User: Fragment(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v!!.id) {
             R.id.buttonShopSignUp -> {
-                authViewModel.shopDataModel.phone = userData.phone
+                authViewModel.shopDataModel.phone = userData.phone!!
                 localView.findNavController().navigate(R.id.shopDetails)
             }
             R.id.locationButton -> {

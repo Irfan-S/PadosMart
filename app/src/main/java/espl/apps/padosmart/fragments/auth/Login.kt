@@ -267,13 +267,15 @@ class Login : Fragment(), View.OnClickListener {
                                             AuthRepository.ShopDataFetch {
                                             override fun onFetchComplete(shopDataModel: ShopDataModel?) {
                                                 if (shopDataModel != null) {
+                                                    shopDataModel.shopPrivateID =
+                                                        authViewModel.authRepository.getFirebaseUser()!!.uid
                                                     authViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :
                                                             FirestoreRepository.OnAuthFirestoreCallback {
                                                             override fun onUploadSuccessful(id: String?) {
                                                                 if (id != null) {
-                                                                    shopDataModel.shopID = id
+                                                                    shopDataModel.shopPublicID = id
                                                                     authViewModel.authRepository.createShopDataObject(
                                                                         shopDataModel,
                                                                         callback = object :
@@ -319,6 +321,11 @@ class Login : Fragment(), View.OnClickListener {
                                             "Unable to sign you in",
                                             Snackbar.LENGTH_LONG
                                         ).show()
+                                    }
+                                    NEW_USER.toLong() -> {
+                                        Log.d(TAG, "User type: NEW_USER")
+                                        authViewModel.userData.phone = phoneNumber
+                                        localView.findNavController().navigate(R.id.userSignup)
                                     }
                                 }
                             } else {

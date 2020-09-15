@@ -51,7 +51,7 @@ class UserHome : Fragment() {
                         override fun onButtonClick(position: Int) {
                             Log.d(TAG, "Position is $position")
                             //TODO animate transition of exercise with sharedwindowtransition(?)
-                            Log.d(TAG, "Option selected is ${shopsList[position].shopID}")
+                            Log.d(TAG, "Option selected is ${shopsList[position].shopPublicID}")
                             userViewModel.selectedShop = shopsList[position]
 
 //                    findNavController().navigate(action)

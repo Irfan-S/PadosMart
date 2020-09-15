@@ -1,4 +1,4 @@
-package espl.apps.padosmart
+package espl.apps.padosmart.bases
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,9 +6,6 @@ import android.os.CountDownTimer
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import espl.apps.padosmart.bases.AuthBase
-import espl.apps.padosmart.bases.EndUserBase
-import espl.apps.padosmart.bases.ShopBase
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
@@ -27,6 +24,7 @@ class SplashScreenActivity : AppCompatActivity() {
         val authRepository = AuthRepository(applicationContext)
 
         intentLogin = Intent(applicationContext, AuthBase::class.java)
+        val currentUser = authRepository.getFirebaseUser()
         val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
             override fun onTick(millisecondsUntilDone: Long) {
 
@@ -35,12 +33,13 @@ class SplashScreenActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 Log.d(TAG, "Cached sign-in not found, asking for fresh sign-in..")
+                authRepository.signOut()
                 startActivity(intentLogin)
                 finish()
             }
         }
 
-        val currentUser = authRepository.getFirebaseUser()
+
 
         if (currentUser != null) {
 

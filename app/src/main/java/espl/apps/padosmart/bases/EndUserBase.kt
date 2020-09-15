@@ -25,7 +25,7 @@ class EndUserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.O
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.base_user_activity)
-        Log.d("hi", "in end user base")
+        Log.d(TAG, "in end user base")
 
         val toolbar = findViewById<MaterialToolbar>(R.id.userHomeAppBar)
         toolbar.setNavigationOnClickListener(this)
