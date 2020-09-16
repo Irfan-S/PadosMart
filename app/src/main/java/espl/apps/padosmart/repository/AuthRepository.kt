@@ -57,7 +57,7 @@ class AuthRepository(private var context: Context) {
     /**
      * Returns current database reference
      */
-    fun getFirebaseReference(): DatabaseReference {
+    fun getAuthFirebaseReference(): DatabaseReference {
         Log.d(TAG, "Returning database reference object")
         return firebaseAuthDatabaseReference
     }

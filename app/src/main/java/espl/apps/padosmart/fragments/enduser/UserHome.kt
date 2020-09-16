@@ -13,7 +13,7 @@ import espl.apps.padosmart.R
 import espl.apps.padosmart.adapters.ShopDisplayAdapter
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.repository.FirestoreRepository
-import espl.apps.padosmart.viewmodels.UserViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 
 
 class UserHome : Fragment() {
@@ -35,13 +35,13 @@ class UserHome : Fragment() {
         )
 
         var shopsList: ArrayList<ShopDataModel>
-        val userViewModel: UserViewModel =
-            ViewModelProvider(this).get(UserViewModel::class.java)
+        val appViewModel: AppViewModel =
+            ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
         val recentStoresRecyclerView: RecyclerView =
-            view.findViewById(R.id.recentStoresRecyclerView)
+            view.findViewById(R.id.recentsShopsRecyclerView)
         recentStoresRecyclerView.layoutManager = horizontalLayout
 
-        userViewModel.fireStoreRepository.fetchShops(object : FirestoreRepository.OnShopsFetched {
+        appViewModel.appRepository.fetchShops(object : FirestoreRepository.OnShopsFetched {
             override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
                 Log.d(TAG, "Length: ${shopList.size}")
                 shopsList = shopList
@@ -52,7 +52,7 @@ class UserHome : Fragment() {
                             Log.d(TAG, "Position is $position")
                             //TODO animate transition of exercise with sharedwindowtransition(?)
                             Log.d(TAG, "Option selected is ${shopsList[position].shopPublicID}")
-                            userViewModel.selectedShop = shopsList[position]
+                            appViewModel.selectedShop = shopsList[position]
 
 //                    findNavController().navigate(action)
                         }

@@ -269,13 +269,19 @@ class Login : Fragment(), View.OnClickListener {
                                                 if (shopDataModel != null) {
                                                     shopDataModel.shopPrivateID =
                                                         authViewModel.authRepository.getFirebaseUser()!!.uid
+                                                    val id =
+                                                        authViewModel.fireStoreRepository.fireStoreDB.collection(
+                                                            getString(R.string.firestore_shops)
+                                                        ).document().id
+                                                    shopDataModel.shopPublicID = id
                                                     authViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :
                                                             FirestoreRepository.OnAuthFirestoreCallback {
-                                                            override fun onUploadSuccessful(id: String?) {
-                                                                if (id != null) {
-                                                                    shopDataModel.shopPublicID = id
+                                                            override fun onUploadSuccessful(
+                                                                isSuccess: Boolean
+                                                            ) {
+                                                                if (isSuccess) {
                                                                     authViewModel.authRepository.createShopDataObject(
                                                                         shopDataModel,
                                                                         callback = object :

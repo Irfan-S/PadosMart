@@ -1,9 +1,9 @@
 package espl.apps.padosmart.models
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import com.google.firebase.Timestamp
 
-@Parcelize
+//TODO Web admin needs to add in date to object before initialization.
+
 data class ShopDataModel(
     var shopName: String? = null,
     var ownerName: String? = null,
@@ -16,6 +16,8 @@ data class ShopDataModel(
     var country: String? = null,
     var DOB: String? = null,
     var gender: Int? = null,
+    var shopCreationDate: Timestamp? = null,
+    var shopVisitCount: Long? = 0,
     var shopPrivateID: String? = null,
     var shopPublicID: String? = null,
     var shopImageURL: String? = null,
@@ -23,4 +25,5 @@ data class ShopDataModel(
     var shopDeliveryStart: Long? = null,
     var doesShopDeliver: Boolean? = false,
     var shopDeliveryEnd: Long? = null,
-) : Parcelable
+    var orderHistory: ArrayList<OrderDataModel> = ArrayList()
+)

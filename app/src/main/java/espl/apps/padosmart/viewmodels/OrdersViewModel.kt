@@ -19,13 +19,14 @@ class OrdersViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<ArrayList<OrderDataModel>>(ArrayList())
     }
 
+    //TODO add input limiting
     fun getOrdersList(queryID: String, queryArg: String) {
-        fireStoreRepository.fetchAllOrders(queryID, queryArg, object :
+        fireStoreRepository.fetchQueryOrdersFromFirestore(queryID, queryArg, object :
             FirestoreRepository.OnOrdersFetched {
             override fun onSuccess(orderList: ArrayList<OrderDataModel>) {
                 ordersList.value = orderList
             }
-        })
+        }, limit = 10)
     }
 
 

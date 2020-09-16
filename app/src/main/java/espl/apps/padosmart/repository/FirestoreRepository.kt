@@ -1,9 +1,7 @@
 package espl.apps.padosmart.repository
 
 import android.content.Context
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
@@ -19,11 +17,10 @@ class FirestoreRepository(private var context: Context) {
 
     private val TAG = "FirestoreRepository"
 
-    private val fireStoreDB: FirebaseFirestore
+    val fireStoreDB: FirebaseFirestore
 
     private val mAuth: FirebaseAuth
 
-    private var user: FirebaseUser?
 
     private val firebaseStorage: FirebaseStorage
 
@@ -31,67 +28,54 @@ class FirestoreRepository(private var context: Context) {
     init {
         fireStoreDB = Firebase.firestore
         mAuth = FirebaseAuth.getInstance()
-        user = mAuth.currentUser
         firebaseStorage = Firebase.storage
     }
-
-    fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnAuthFirestoreCallback) {
-        fireStoreDB.collection(context.getString(R.string.firestore_shops)).add(shopDataModel)
-            .addOnCompleteListener {
-                callback.onUploadSuccessful(it.result?.id)
-            }.addOnFailureListener {
-                callback.onUploadSuccessful(null)
-            }
-    }
-
-    /**
-     * Fetches all shops in the firestore database
-     */
-    fun fetchShops(onShopsFetched: OnShopsFetched) {
-        fireStoreDB.collection(context.getString(R.string.firestore_shops)).get()
-            .addOnSuccessListener { documents ->
-                Log.d(TAG, "Fetching all shop data")
-                val shopsList: ArrayList<ShopDataModel> = ArrayList()
-                for (document in documents) {
-                    shopsList.add(document.toObject<ShopDataModel>())
-                    Log.d(TAG, shopsList.toString())
-                }
-                Log.d(TAG, "Length: ${shopsList.size}")
-                onShopsFetched.onSuccess(shopsList)
-            }.addOnFailureListener {
-            onShopsFetched.onSuccess(ArrayList())
-        }
-    }
-
-
     //TODO allow orders to be fed into the parent calls as well?
 
-    fun addOrder(order: OrderDataModel, onOrderAdded: OnOrderAdded) {
+    fun addOrderToFirestore(order: OrderDataModel, onOrderAdded: OnOrderAdded) {
         val id = fireStoreDB.collection(context.getString(R.string.firestore_orders)).document().id
         order.orderID = id
         fireStoreDB.collection(context.getString(R.string.firestore_orders)).add(order)
             .addOnSuccessListener {
                 onOrderAdded.onSuccess(true)
             }.addOnFailureListener {
-            onOrderAdded.onSuccess(false)
-        }
+                onOrderAdded.onSuccess(false)
+            }
     }
 
-    fun fetchAllOrders(queryID: String, queryArg: String, onOrdersFetched: OnOrdersFetched) {
+
+    fun fetchQueryOrdersFromFirestore(
+        queryID: String,
+        queryArg: String,
+        onOrdersFetched: OnOrdersFetched,
+        limit: Long
+    ) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
-            .whereEqualTo(queryArg, queryID).get().addOnSuccessListener { documents ->
-            for (document in documents) {
-                resp.add(document.toObject() as OrderDataModel)
+            .whereEqualTo(queryArg, queryID).limit(limit).get().addOnSuccessListener { documents ->
+                for (document in documents) {
+                    resp.add(document.toObject() as OrderDataModel)
+                }
+                onOrdersFetched.onSuccess(resp)
+            }.addOnFailureListener {
+                onOrdersFetched.onSuccess(resp)
             }
-            onOrdersFetched.onSuccess(resp)
-        }.addOnFailureListener {
-            onOrdersFetched.onSuccess(resp)
-        }
     }
 
+    fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnAuthFirestoreCallback) {
+        fireStoreDB.collection(context.getString(R.string.firestore_shops)).add(shopDataModel)
+            .addOnCompleteListener {
+                callback.onUploadSuccessful(true)
+            }.addOnFailureListener {
+                callback.onUploadSuccessful(false)
+            }
+    }
+
+    //TODO implement order features
+
+
     interface OnAuthFirestoreCallback {
-        fun onUploadSuccessful(id: String?)
+        fun onUploadSuccessful(isSuccess: Boolean)
     }
 
     interface OnOrderAdded {
