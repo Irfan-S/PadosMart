@@ -3,6 +3,7 @@ package espl.apps.padosmart.repository
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -43,6 +44,20 @@ class FirestoreRepository(private var context: Context) {
             }
     }
 
+    fun fetchRecentShops(numOfShops: Long, onShopsFetched: OnShopsFetched) {
+        val resp = ArrayList<ShopDataModel>()
+        fireStoreDB.collection(context.getString(R.string.firestore_shops))
+            .orderBy("shopCreationDate", Query.Direction.DESCENDING).limit(numOfShops).get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    resp.add(document.toObject() as ShopDataModel)
+                }
+                onShopsFetched.onSuccess(resp)
+            }.addOnFailureListener {
+                onShopsFetched.onSuccess(resp)
+            }
+    }
+
 
     fun fetchQueryOrdersFromFirestore(
         queryID: String,
@@ -60,6 +75,10 @@ class FirestoreRepository(private var context: Context) {
             }.addOnFailureListener {
                 onOrdersFetched.onSuccess(resp)
             }
+    }
+
+    fun fetchShopDetails(shopPublicID: String) {
+
     }
 
     fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnAuthFirestoreCallback) {

@@ -36,6 +36,7 @@ class UserOrders : Fragment() {
         var ordersList: ArrayList<OrderDataModel>? = ArrayList()
         val orderViewModel: OrdersViewModel =
             ViewModelProvider(this).get(OrdersViewModel::class.java)
+
         orderViewModel.getOrdersList(
             orderViewModel.authRepository.getFirebaseUser()!!.uid,
             QUERY_ARG_USER

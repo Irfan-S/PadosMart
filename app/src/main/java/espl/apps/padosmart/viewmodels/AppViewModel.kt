@@ -72,5 +72,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         })
     }
 
+    fun fetchNewShops() {
+
+    }
+
 
 }

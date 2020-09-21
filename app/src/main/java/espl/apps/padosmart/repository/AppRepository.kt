@@ -4,12 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import espl.apps.padosmart.R
@@ -50,24 +46,7 @@ class AppRepository(val context: Context) {
         user = FirebaseAuth.getInstance().currentUser
     }
 
-    fun fetchRecentlyOrderedShops(onShopsFetched: FirestoreRepository.OnShopsFetched) {
 
-        val recentStoresListener = object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                onShopsFetched.onSuccess(ArrayList())
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                Log.d(TAG, "Shop found with response ${p0.value}")
-                p0.getValue<ArrayList<ShopDataModel>>()?.let { onShopsFetched.onSuccess(it) }
-            }
-
-        }
-
-        firebaseDatabaseReference.child(context.getString(R.string.firebase_user_orderhistory))
-            .addListenerForSingleValueEvent(recentStoresListener)
-
-    }
 
     //TODO function that attaches to chat bucket, for live order editing by both parties before deleting.
 
