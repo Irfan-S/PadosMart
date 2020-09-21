@@ -50,9 +50,10 @@ class UserHome : Fragment() {
                         ShopDisplayAdapter.ButtonListener {
                         override fun onButtonClick(position: Int) {
                             Log.d(TAG, "Position is $position")
-                            //TODO animate transition of exercise with sharedwindowtransition(?)
+                            //TODO open new chat window with selected shop
                             Log.d(TAG, "Option selected is ${shopsList[position].shopPublicID}")
                             appViewModel.selectedShop = shopsList[position]
+
 
 //                    findNavController().navigate(action)
                         }

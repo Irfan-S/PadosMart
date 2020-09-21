@@ -9,7 +9,8 @@ import android.widget.Button
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.AuthBase
+import espl.apps.padosmart.bases.UserBase
+import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 
 class UserProfile : Fragment() {
     val TAG = "UserProfile"
@@ -24,13 +25,14 @@ class UserProfile : Fragment() {
             inflater.inflate(R.layout.fragment_profile_user, container, false) as View
 
         val button: Button = view.findViewById(R.id.button)
+
+        val intent = Intent(context, UserBase::class.java)
+        intent.putExtra(getString(R.string.intent_userType), AUTH_ACCESS_FAILED)
+
         button.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             startActivity(
-                Intent(
-                    context,
-                    AuthBase::class.java
-                )
+                intent
             )
             requireActivity().finish()
         }

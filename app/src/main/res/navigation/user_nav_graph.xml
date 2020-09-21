@@ -8,7 +8,11 @@
         android:id="@+id/homeFragmentUser"
         android:name="espl.apps.padosmart.fragments.enduser.UserHome"
         android:label="HomeFragmentUser"
-        tools:layout="@layout/fragment_home_user" />
+        tools:layout="@layout/fragment_home_user">
+        <action
+            android:id="@+id/action_homeFragmentUser_to_chat2"
+            app:destination="@id/userChat" />
+    </fragment>
     <fragment
         android:id="@+id/ordersFragmentUser"
         android:name="espl.apps.padosmart.fragments.enduser.UserOrders"
@@ -23,5 +27,10 @@
         android:id="@+id/profileFragmentUser"
         android:name="espl.apps.padosmart.fragments.enduser.UserProfile"
         android:label="ProfileFragmentUser"
-        tools:layout="@layout/fragment_profile_user"/>
+        tools:layout="@layout/fragment_profile_user" />
+    <fragment
+        android:id="@+id/userChat"
+        android:name="espl.apps.padosmart.fragments.commons.Chat"
+        android:label="Chat"
+        tools:layout="@layout/fragment_commons_chatscreen"></fragment>
 </navigation>

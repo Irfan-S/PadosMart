@@ -22,20 +22,20 @@ import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthProvider
 import com.hbb20.CountryCodePicker
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.EndUserBase
-import espl.apps.padosmart.bases.ShopBase
+import espl.apps.padosmart.bases.UserBase
 import espl.apps.padosmart.models.ShopDataModel
+import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.utils.*
-import espl.apps.padosmart.viewmodels.AuthViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 import java.util.concurrent.TimeUnit
 
 class Login : Fragment(), View.OnClickListener {
 
     val TAG = "SignupShopInfo"
 
-    lateinit var authViewModel: AuthViewModel
+    lateinit var appViewModel: AppViewModel
 
     // [START declare_auth]
     lateinit var mAuth: FirebaseAuth
@@ -68,10 +68,10 @@ class Login : Fragment(), View.OnClickListener {
 
         localView =
             inflater.inflate(R.layout.fragment_login, container, false) as View
-        authViewModel =
-            activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+        appViewModel =
+            activity?.let { ViewModelProvider(it).get(AppViewModel::class.java) }!!
 
-        mAuth = authViewModel.authRepository.getFirebaseAuthReference()
+        mAuth = appViewModel.authRepository.getFirebaseAuthReference()
         // Restore instance state
         savedInstanceState?.let { onActivityCreated(it) }
 
@@ -232,8 +232,8 @@ class Login : Fragment(), View.OnClickListener {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
 
-                    authViewModel.authRepository.setFirebaseUser(task.result!!.user!!)
-                    authViewModel.authRepository.getFirebaseUserType(object :
+                    appViewModel.authRepository.setFirebaseUser(task.result!!.user!!)
+                    appViewModel.authRepository.getFirebaseUserType(object :
                         AuthRepository.AuthDataInterface {
                         override fun onAuthCallback(response: Long) {
                             Log.d(TAG, "User data fetched with response: $response")
@@ -243,13 +243,21 @@ class Login : Fragment(), View.OnClickListener {
                                     END_USER.toLong() -> {
                                         Log.d(TAG, "User type: END_USER")
                                         val intent =
-                                            Intent(requireContext(), EndUserBase::class.java)
+                                            Intent(requireContext(), UserBase::class.java)
+                                        intent.putExtra(
+                                            getString(R.string.intent_userType),
+                                            END_USER
+                                        )
                                         startActivity(intent)
                                         requireActivity().finish()
                                     }
                                     SHOP_USER.toLong() -> {
                                         Log.d(TAG, "User type: SHOP_USER")
-                                        val intent = Intent(requireContext(), ShopBase::class.java)
+                                        val intent = Intent(requireContext(), UserBase::class.java)
+                                        intent.putExtra(
+                                            getString(R.string.intent_userType),
+                                            SHOP_USER
+                                        )
                                         startActivity(intent)
                                         requireActivity().finish()
                                     }
@@ -263,18 +271,18 @@ class Login : Fragment(), View.OnClickListener {
                                     }
                                     SHOP_INIT_LOGIN.toLong() -> {
                                         Log.d(TAG, "User type: SHOP initialization")
-                                        authViewModel.authRepository.fetchShopDataObject(object :
+                                        appViewModel.authRepository.fetchShopDataObject(object :
                                             AuthRepository.ShopDataFetch {
                                             override fun onFetchComplete(shopDataModel: ShopDataModel?) {
                                                 if (shopDataModel != null) {
                                                     shopDataModel.shopPrivateID =
-                                                        authViewModel.authRepository.getFirebaseUser()!!.uid
+                                                        appViewModel.authRepository.getFirebaseUser()!!.uid
                                                     val id =
-                                                        authViewModel.fireStoreRepository.fireStoreDB.collection(
+                                                        appViewModel.fireStoreRepository.fireStoreDB.collection(
                                                             getString(R.string.firestore_shops)
                                                         ).document().id
                                                     shopDataModel.shopPublicID = id
-                                                    authViewModel.fireStoreRepository.uploadShopDetails(
+                                                    appViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :
                                                             FirestoreRepository.OnAuthFirestoreCallback {
@@ -282,7 +290,7 @@ class Login : Fragment(), View.OnClickListener {
                                                                 isSuccess: Boolean
                                                             ) {
                                                                 if (isSuccess) {
-                                                                    authViewModel.authRepository.createShopDataObject(
+                                                                    appViewModel.authRepository.createShopDataObject(
                                                                         shopDataModel,
                                                                         callback = object :
                                                                             AuthRepository.UserDataInterface {
@@ -290,14 +298,18 @@ class Login : Fragment(), View.OnClickListener {
                                                                                 success: Boolean
                                                                             ) {
                                                                                 if (success) {
-                                                                                    authViewModel.authRepository.createShopUserAuthObject(
+                                                                                    appViewModel.authRepository.createShopUserAuthObject(
                                                                                         SHOP_USER
                                                                                     )
                                                                                     val intent =
                                                                                         Intent(
                                                                                             requireContext(),
-                                                                                            ShopBase::class.java
+                                                                                            UserBase::class.java
                                                                                         )
+                                                                                    intent.putExtra(
+                                                                                        getString(R.string.intent_userType),
+                                                                                        SHOP_USER
+                                                                                    )
                                                                                     startActivity(
                                                                                         intent
                                                                                     )
@@ -311,6 +323,12 @@ class Login : Fragment(), View.OnClickListener {
                                                                                         Snackbar.LENGTH_LONG
                                                                                     ).show()
                                                                                 }
+                                                                            }
+
+                                                                            override fun onDataFetch(
+                                                                                dataModel: UserDataModel
+                                                                            ) {
+                                                                                //Nothing
                                                                             }
                                                                         })
                                                                 }
@@ -330,7 +348,7 @@ class Login : Fragment(), View.OnClickListener {
                                     }
                                     NEW_USER.toLong() -> {
                                         Log.d(TAG, "User type: NEW_USER")
-                                        authViewModel.userData.phone = phoneNumber
+                                        appViewModel.userData.phone = phoneNumber
                                         localView.findNavController().navigate(R.id.userSignup)
                                     }
                                 }
@@ -338,7 +356,7 @@ class Login : Fragment(), View.OnClickListener {
                                 when (response) {
                                     NEW_USER.toLong() -> {
                                         Log.d(TAG, "User type: NEW_USER")
-                                        authViewModel.userData.phone = phoneNumber
+                                        appViewModel.userData.phone = phoneNumber
                                         localView.findNavController().navigate(R.id.userSignup)
                                     }
                                     else -> {

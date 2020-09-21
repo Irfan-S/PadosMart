@@ -87,6 +87,38 @@ class AuthRepository(private var context: Context) {
 
     }
 
+    fun getEndUserDataObject(callback: UserDataInterface) {
+        val dbr =
+            Firebase.database.getReference(context.getString(R.string.firebase_user_data_node))
+                .child(user!!.uid)
+
+        val userDataObjectListener = object : ValueEventListener {
+            var respModel: UserDataModel? = UserDataModel()
+            override fun onCancelled(p0: DatabaseError) {
+                respModel = UserDataModel()
+                callback.onDataFetch(respModel!!)
+            }
+
+
+            override fun onDataChange(p0: DataSnapshot) {
+                Log.d(TAG, "Shop found with response ${p0.value}")
+                respModel = p0.getValue<UserDataModel>()
+                if (respModel == null) {
+                    callback.onDataFetch(UserDataModel())
+                } else {
+                    callback.onDataFetch(respModel!!)
+                }
+
+            }
+
+        }
+
+        dbr.addListenerForSingleValueEvent(userDataObjectListener)
+
+
+    }
+
+
     fun createShopUserAuthObject(shopAuthType: Int) {
         if (user != null) {
             firebaseAuthDatabaseReference.child(user!!.uid).setValue(shopAuthType)
@@ -216,6 +248,7 @@ class AuthRepository(private var context: Context) {
 
     interface UserDataInterface {
         fun onUploadCallback(success: Boolean)
+        fun onDataFetch(dataModel: UserDataModel)
     }
 
     interface ShopAuthURIInterface {

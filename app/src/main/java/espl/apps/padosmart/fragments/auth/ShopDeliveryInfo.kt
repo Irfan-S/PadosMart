@@ -13,16 +13,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
+import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.utils.SHOP_UNVERIFIED
-import espl.apps.padosmart.viewmodels.AuthViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 import java.util.concurrent.TimeUnit
 
 class ShopDeliveryInfo : Fragment(), View.OnClickListener {
 
     val TAG = "SignupShopDeliveryInfo"
 
-    lateinit var authViewModel: AuthViewModel
+    lateinit var appViewModel: AppViewModel
 
     lateinit var localView: View
     lateinit var startTimePicker: TimePicker
@@ -40,7 +41,7 @@ class ShopDeliveryInfo : Fragment(), View.OnClickListener {
         localView =
             inflater.inflate(R.layout.fragment_signup_shop_delivery_info, container, false) as View
 
-        authViewModel = activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+        appViewModel = activity?.let { ViewModelProvider(it).get(AppViewModel::class.java) }!!
         startTimePicker = localView.findViewById(R.id.deliveryStartTimePicker)
         endTimePicker = localView.findViewById(R.id.deliveryEndTimePicker)
         eulaCheckBox = localView.findViewById(R.id.EULAcheckBox)
@@ -98,9 +99,9 @@ class ShopDeliveryInfo : Fragment(), View.OnClickListener {
                                 Snackbar.LENGTH_LONG
                             ).show()
                         } else {
-                            authViewModel.shopDataModel.shopDeliveryStart = startTimeInMillis
-                            authViewModel.shopDataModel.shopDeliveryEnd = endTimeInMillis
-                            authViewModel.shopDataModel.doesShopDeliver = true
+                            appViewModel.shopData.shopDeliveryStart = startTimeInMillis
+                            appViewModel.shopData.shopDeliveryEnd = endTimeInMillis
+                            appViewModel.shopData.doesShopDeliver = true
                             initializeShop()
                         }
                     } else {
@@ -112,12 +113,12 @@ class ShopDeliveryInfo : Fragment(), View.OnClickListener {
     }
 
     private fun initializeShop() {
-        authViewModel.authRepository.createShopDataObject(
-            authViewModel.shopDataModel,
+        appViewModel.authRepository.createShopDataObject(
+            appViewModel.shopData,
             object : AuthRepository.UserDataInterface {
                 override fun onUploadCallback(success: Boolean) {
                     if (success) {
-                        authViewModel.authRepository.createShopUserAuthObject(
+                        appViewModel.authRepository.createShopUserAuthObject(
                             SHOP_UNVERIFIED
                         )
                         Snackbar.make(
@@ -138,6 +139,10 @@ class ShopDeliveryInfo : Fragment(), View.OnClickListener {
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
+                }
+
+                override fun onDataFetch(dataModel: UserDataModel) {
+                    //Nothing
                 }
             })
     }

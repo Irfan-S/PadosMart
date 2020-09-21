@@ -69,13 +69,16 @@ class AppRepository(val context: Context) {
 
     }
 
+    //TODO function that attaches to chat bucket, for live order editing by both parties before deleting.
+
     fun addOrderToShopNode(order: OrderDataModel, onOrderAdded: FirestoreRepository.OnOrderAdded) {
+        //TODO assert all order field are not null
         fireStoreRepository.addOrderToFirestore(order, object : FirestoreRepository.OnOrderAdded {
             //After adding data into firestore, fetch its ID and assign into shop.
             override fun onSuccess(boolean: Boolean) {
                 if (boolean) {
                     firebaseDatabaseReference.child(context.getString(R.string.firebase_shop_orderhistory))
-                        .child(order.orderID).setValue(order)
+                        .child(order.orderID!!).setValue(order)
                         .addOnSuccessListener {
                             onOrderAdded.onSuccess(true)
                         }.addOnFailureListener {
@@ -114,7 +117,7 @@ class AppRepository(val context: Context) {
             override fun onSuccess(boolean: Boolean) {
                 if (boolean) {
                     firebaseDatabaseReference.child(context.getString(R.string.firebase_user_orderhistory))
-                        .child(order.orderID).setValue(order)
+                        .child(order.orderID!!).setValue(order)
                         .addOnSuccessListener {
                             onOrderAdded.onSuccess(true)
                         }.addOnFailureListener {

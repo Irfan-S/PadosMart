@@ -17,10 +17,10 @@ import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.AuthBase
+import espl.apps.padosmart.bases.UserBase
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
-import espl.apps.padosmart.viewmodels.AuthViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 
 class User: Fragment(), View.OnClickListener {
 
@@ -46,7 +46,7 @@ class User: Fragment(), View.OnClickListener {
     lateinit var signupShopButton: Button
     lateinit var submitDetailsButton: Button
     private lateinit var locationButton: Button
-    lateinit var authViewModel: AuthViewModel
+    lateinit var appViewModel: AppViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,10 +56,10 @@ class User: Fragment(), View.OnClickListener {
 
         localView =
             inflater.inflate(R.layout.fragment_signup_user, container, false) as View
-        authViewModel =
-            activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+        appViewModel =
+            activity?.let { ViewModelProvider(it).get(AppViewModel::class.java) }!!
 
-        userData = authViewModel.userData
+        userData = appViewModel.userData
 
         locationButton = localView.findViewById(R.id.locationButton)
         signupShopButton = localView.findViewById(R.id.buttonShopSignUp)
@@ -93,8 +93,8 @@ class User: Fragment(), View.OnClickListener {
                 }
             }
 
-        authViewModel.address.observe(viewLifecycleOwner, serviceObserver)
-        authViewModel.isAddressFetchInProgress.observe(viewLifecycleOwner, buttonObserver)
+        appViewModel.address.observe(viewLifecycleOwner, serviceObserver)
+        appViewModel.isAddressFetchInProgress.observe(viewLifecycleOwner, buttonObserver)
 
         userNameField = localView.findViewById(R.id.shopNameField)
         userPhoneTextView = localView.findViewById(R.id.userPhoneTextView)
@@ -138,16 +138,16 @@ class User: Fragment(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v!!.id) {
             R.id.buttonShopSignUp -> {
-                authViewModel.shopDataModel.phone = userData.phone!!
+                appViewModel.shopData.phone = userData.phone!!
                 localView.findNavController().navigate(R.id.shopDetails)
             }
             R.id.locationButton -> {
-                authViewModel.locationService!!.checkGpsStatus()
-                if ((activity as AuthBase).foregroundPermissionApproved()) {
-                    authViewModel.locationService?.subscribeToLocationUpdates()
+                appViewModel.locationService!!.checkGpsStatus()
+                if ((activity as UserBase).foregroundPermissionApproved()) {
+                    appViewModel.locationService?.subscribeToLocationUpdates()
                         ?: Log.d(TAG, "Service Not Bound")
                 } else {
-                    (activity as AuthBase).requestForegroundPermissions()
+                    (activity as UserBase).requestForegroundPermissions()
                 }
 
             }
@@ -160,12 +160,12 @@ class User: Fragment(), View.OnClickListener {
                     userData.state = userStateField.text.toString()
                     userData.country = userCountryField.text.toString()
                     userData.pinCode = userPinCodeField.text.toString()
-                    authViewModel.authRepository.getFirebaseUser()!!
+                    appViewModel.authRepository.getFirebaseUser()!!
                         .updateEmail(userData.email.toString())
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Log.d(TAG, "User email address updated.")
-                                authViewModel.authRepository.getFirebaseUser()!!
+                                appViewModel.authRepository.getFirebaseUser()!!
                                     .sendEmailVerification()
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
@@ -175,12 +175,12 @@ class User: Fragment(), View.OnClickListener {
                                                 "Please verify your email account to proceed",
                                                 Snackbar.LENGTH_LONG
                                             ).show()
-                                            authViewModel.authRepository.createEndUserDataObject(
+                                            appViewModel.authRepository.createEndUserDataObject(
                                                 userData,
                                                 object : AuthRepository.UserDataInterface {
                                                     override fun onUploadCallback(success: Boolean) {
                                                         if (success) {
-                                                            authViewModel.authRepository.createEndUserAuthObject()
+                                                            appViewModel.authRepository.createEndUserAuthObject()
                                                             localView.findNavController()
                                                                 .navigate(R.id.login)
                                                         } else {
@@ -192,6 +192,10 @@ class User: Fragment(), View.OnClickListener {
                                                                 Snackbar.LENGTH_LONG
                                                             ).show()
                                                         }
+                                                    }
+
+                                                    override fun onDataFetch(dataModel: UserDataModel) {
+                                                        //Nothing
                                                     }
                                                 })
                                         } else {

@@ -27,9 +27,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".bases.AuthBase" />
-        <activity android:name=".bases.ShopBase" />
-        <activity android:name=".bases.EndUserBase" />
+        <activity android:name=".bases.UserBase" />
 
         <service
             android:name=".services.LocationService"

@@ -14,6 +14,7 @@
     <string name="firestore_orders">orders</string>
     <string name="firebase_user_orderhistory">orderHistory</string>
     <string name="firebase_shop_orderhistory">orderHistory</string>
+    <string name="intent_userType">userType</string>
 
 
 </resources>

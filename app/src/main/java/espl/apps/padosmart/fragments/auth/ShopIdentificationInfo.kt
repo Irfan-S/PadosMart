@@ -17,7 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.storage.StorageReference
 import espl.apps.padosmart.R
 import espl.apps.padosmart.repository.AuthRepository
-import espl.apps.padosmart.viewmodels.AuthViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 
 class ShopIdentificationInfo : Fragment(), View.OnClickListener {
 
@@ -25,7 +25,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
 
     lateinit var localView: View
 
-    lateinit var authViewModel: AuthViewModel
+    lateinit var appViewModel: AppViewModel
 
     var shopImage: Boolean = false
 
@@ -58,7 +58,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
         profileDisplaySelector.setOnClickListener(this)
         continueButton.setOnClickListener(this)
 
-        authViewModel = activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+        appViewModel = activity?.let { ViewModelProvider(it).get(AppViewModel::class.java) }!!
 
         return localView
     }
@@ -100,7 +100,8 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
             val images: List<Image> = ImagePicker.getImages(data)
 
             if (shopImage) {
-                authViewModel.authRepository.uploadShopImages(images,
+                appViewModel.authRepository.uploadShopImages(
+                    images,
                     object : AuthRepository.ShopImgURIInterface {
                         override fun onUploadCallback(
                             reference: StorageReference?,
@@ -111,7 +112,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                                     if (it.isSuccessful) {
                                         allDetailsValid = true
                                         val downloadUri = it.result
-                                        authViewModel.shopDataModel.shopImageURL =
+                                        appViewModel.shopData.shopImageURL =
                                             downloadUri.toString()
                                         Glide.with(requireContext()).load(images[0].uri)
                                             .into(profileDisplaySelector)
@@ -142,7 +143,8 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                     })
 
             } else {
-                authViewModel.authRepository.uploadAuthImages(images,
+                appViewModel.authRepository.uploadAuthImages(
+                    images,
                     object : AuthRepository.ShopAuthURIInterface {
                         override fun onUploadCallback(
                             reference: StorageReference?,
@@ -153,7 +155,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
                                     if (it.isSuccessful) {
                                         allDetailsValid = true
                                         val downloadUri = it.result
-                                        authViewModel.shopDataModel.shopVerificationImageURL =
+                                        appViewModel.shopData.shopVerificationImageURL =
                                             downloadUri.toString()
                                         Glide.with(requireContext()).load(images[0].uri)
                                             .into(proofImageSelector)

@@ -3,15 +3,14 @@ package espl.apps.padosmart.models
 import com.google.firebase.Timestamp
 
 data class OrderDataModel(
-    var orderID: String,
-    var customerID: String,
-    var customerName: String,
-    var shopID: String,
-    var shopName: String,
-    var amount: Int,
-    var orderStatus: Int,
-    var orderDeliveryLocation: String,
-    var orderPlacedTimeInMillis: Timestamp,
-    var orderDeliveredTimeInMillis: Timestamp,
-    var paymentType: Int
+    var orderID: String? = null,
+    var customerID: String? = null,
+    var customerName: String? = null,
+    var shopID: String? = null,
+    var shopName: String? = null,
+    var orderStatus: Int? = null,
+    var orderDeliveryLocation: String? = null,
+    var orderPlacedTimeInMillis: Timestamp? = null,
+    var orderDeliveredTimeInMillis: Timestamp? = null,
+    var paymentType: Int? = null
 )

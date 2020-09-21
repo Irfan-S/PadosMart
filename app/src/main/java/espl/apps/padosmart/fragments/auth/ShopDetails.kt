@@ -19,11 +19,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.AuthBase
+import espl.apps.padosmart.bases.UserBase
 import espl.apps.padosmart.utils.GENDER_FEMALE
 import espl.apps.padosmart.utils.GENDER_MALE
 import espl.apps.padosmart.utils.GENDER_OTHERS
-import espl.apps.padosmart.viewmodels.AuthViewModel
+import espl.apps.padosmart.viewmodels.AppViewModel
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -33,7 +33,7 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
 
     lateinit var localView: View
 
-    lateinit var authViewModel: AuthViewModel
+    lateinit var appViewModel: AppViewModel
 
     lateinit var locationButton: Button
 
@@ -63,12 +63,12 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
 
         localView =
             inflater.inflate(R.layout.fragment_signup_shop_details, container, false) as View
-        authViewModel = activity?.let { ViewModelProvider(it).get(AuthViewModel::class.java) }!!
+        appViewModel = activity?.let { ViewModelProvider(it).get(AppViewModel::class.java) }!!
 
         shopNameEditText = localView.findViewById(R.id.shopNameField)
         ownerNameEditText = localView.findViewById(R.id.shopOwnerField)
         shopNumberTextView = localView.findViewById(R.id.shopNumberTextView)
-        shopNumberTextView.text = authViewModel.shopDataModel.phone
+        shopNumberTextView.text = appViewModel.shopData.phone
         shopEmailEditText = localView.findViewById(R.id.shopEmailField)
         shopAddressEditText = localView.findViewById(R.id.shopAddressField)
 
@@ -95,7 +95,7 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
                 }
             }
 
-        authViewModel.address.observe(viewLifecycleOwner, serviceObserver)
+        appViewModel.address.observe(viewLifecycleOwner, serviceObserver)
 
         return localView
     }
@@ -146,12 +146,12 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
     override fun onClick(v: View?) {
         when (v!!.id) {
             R.id.locationButton -> {
-                authViewModel.locationService!!.checkGpsStatus()
-                if ((activity as AuthBase).foregroundPermissionApproved()) {
-                    authViewModel.locationService?.subscribeToLocationUpdates()
+                appViewModel.locationService!!.checkGpsStatus()
+                if ((activity as UserBase).foregroundPermissionApproved()) {
+                    appViewModel.locationService?.subscribeToLocationUpdates()
                         ?: Log.d(TAG, "Service Not Bound")
                 } else {
-                    (activity as AuthBase).requestForegroundPermissions()
+                    (activity as UserBase).requestForegroundPermissions()
                 }
 
             }
@@ -159,22 +159,22 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
                 if (areShopDetailsValid()) {
 
                     //TODO verifying user data
-                    authViewModel.shopDataModel.DOB = dobEditText.text.toString()
-                    authViewModel.shopDataModel.shopName = shopNameEditText.text.toString()
-                    authViewModel.shopDataModel.ownerName = ownerNameEditText.text.toString()
-                    authViewModel.shopDataModel.address = shopAddressEditText.text.toString()
-                    authViewModel.shopDataModel.email = shopEmailEditText.text.toString()
-                    authViewModel.shopDataModel.city = cityEditText.text.toString()
-                    authViewModel.shopDataModel.state = stateEditText.text.toString()
-                    authViewModel.shopDataModel.country = countryEditText.text.toString()
-                    authViewModel.shopDataModel.pinCode = pinCodeEditText.text.toString()
+                    appViewModel.shopData.DOB = dobEditText.text.toString()
+                    appViewModel.shopData.shopName = shopNameEditText.text.toString()
+                    appViewModel.shopData.ownerName = ownerNameEditText.text.toString()
+                    appViewModel.shopData.address = shopAddressEditText.text.toString()
+                    appViewModel.shopData.email = shopEmailEditText.text.toString()
+                    appViewModel.shopData.city = cityEditText.text.toString()
+                    appViewModel.shopData.state = stateEditText.text.toString()
+                    appViewModel.shopData.country = countryEditText.text.toString()
+                    appViewModel.shopData.pinCode = pinCodeEditText.text.toString()
 
-                    authViewModel.authRepository.getFirebaseUser()!!
-                        .updateEmail(authViewModel.shopDataModel.email.toString())
+                    appViewModel.authRepository.getFirebaseUser()!!
+                        .updateEmail(appViewModel.shopData.email.toString())
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Log.d(TAG, "User email address updated.")
-                                authViewModel.authRepository.getFirebaseUser()!!
+                                appViewModel.authRepository.getFirebaseUser()!!
                                     .sendEmailVerification()
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
@@ -229,13 +229,13 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
     override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
         when (checkedId) {
             R.id.maleRadioButton -> {
-                authViewModel.shopDataModel.gender = GENDER_MALE
+                appViewModel.shopData.gender = GENDER_MALE
             }
             R.id.femaleRadioButton -> {
-                authViewModel.shopDataModel.gender = GENDER_FEMALE
+                appViewModel.shopData.gender = GENDER_FEMALE
             }
             R.id.othersRadioButton -> {
-                authViewModel.shopDataModel.gender = GENDER_OTHERS
+                appViewModel.shopData.gender = GENDER_OTHERS
             }
         }
     }

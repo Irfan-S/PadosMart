@@ -6,6 +6,7 @@ import android.os.CountDownTimer
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import espl.apps.padosmart.R
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
@@ -23,7 +24,8 @@ class SplashScreenActivity : AppCompatActivity() {
 //        Firebase.database.setPersistenceEnabled(true)
         val authRepository = AuthRepository(applicationContext)
 
-        intentLogin = Intent(applicationContext, AuthBase::class.java)
+        intentLogin = Intent(applicationContext, UserBase::class.java)
+        intentLogin!!.putExtra(getString(R.string.intent_userType), AUTH_ACCESS_FAILED)
         val currentUser = authRepository.getFirebaseUser()
         val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
             override fun onTick(millisecondsUntilDone: Long) {
@@ -50,13 +52,25 @@ class SplashScreenActivity : AppCompatActivity() {
                         when (response) {
                             END_USER.toLong() -> {
                                 Log.d(TAG, "User type: END_USER")
-                                intent = Intent(applicationContext, EndUserBase::class.java)
+                                intent =
+                                    Intent(
+                                        applicationContext,
+                                        UserBase::class.java
+                                    )
+                                intent.putExtra(
+                                    getString(R.string.intent_userType),
+                                    END_USER
+                                )
                                 startActivity(intent)
                                 finish()
                             }
                             SHOP_USER.toLong() -> {
                                 Log.d(TAG, "User type: SHOP_USER")
-                                intent = Intent(applicationContext, ShopBase::class.java)
+                                intent = Intent(applicationContext, UserBase::class.java)
+                                intent.putExtra(
+                                    getString(R.string.intent_userType),
+                                    SHOP_USER
+                                )
                                 startActivity(intent)
                                 finish()
                             }
