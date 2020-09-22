@@ -7,10 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
 import espl.apps.padosmart.adapters.ShopDisplayAdapter
+import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.viewmodels.AppViewModel
@@ -53,7 +56,32 @@ class UserHome : Fragment() {
                             //TODO open new chat window with selected shop
                             Log.d(TAG, "Option selected is ${shopsList[position].shopPublicID}")
                             appViewModel.selectedShop = shopsList[position]
+                            val orderModel = OrderDataModel(
+                                customerName = appViewModel.userData.name!!,
+                                shopName = appViewModel.selectedShop!!.shopName!!,
+                                deliveryAddress = appViewModel.userData.address,
+                                customerID = appViewModel.firebaseUser!!.uid,
+                                shopPublicID = appViewModel.selectedShop!!.shopPublicID!!,
 
+                                )
+                            appViewModel.fireStoreRepository.addOrderToFirestore(orderModel,
+                                object : FirestoreRepository.OnOrderAdded {
+
+                                    override fun onSuccess(orderID: String, boolean: Boolean) {
+                                        if (boolean && orderID.isNullOrBlank()) {
+                                            Snackbar.make(
+                                                requireActivity().findViewById(android.R.id.content),
+                                                "Unable to connect to servers, please try again later",
+                                                Snackbar.LENGTH_LONG
+                                            ).show()
+                                        } else {
+                                            appViewModel.orderID = orderID
+                                            view.findNavController()
+                                                .navigate(R.id.action_homeFragmentUser_to_chat2)
+                                        }
+                                    }
+
+                                })
 
 //                    findNavController().navigate(action)
                         }

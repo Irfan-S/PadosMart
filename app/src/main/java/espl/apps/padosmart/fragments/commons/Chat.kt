@@ -1,5 +1,6 @@
 package espl.apps.padosmart.fragments.commons
 
+import android.location.Address
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,10 +9,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.EventListener
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.ktx.toObject
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.UserBase
+import espl.apps.padosmart.models.OrderDataModel
+import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.viewmodels.AppViewModel
 
@@ -22,9 +32,11 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private lateinit var localView: View
 
-
+    lateinit var toolBar: Toolbar
     lateinit var appViewModel: AppViewModel
+    lateinit var deliveryAddress: String
 
+    var listenerRegistration: ListenerRegistration? = null
 
     lateinit var address: String
 
@@ -40,18 +52,96 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
         //TODO create intent that fetches data of the caller, whether user or shop
 
-        val toolBar = localView.findViewById<MaterialToolbar>(R.id.chatAppBar)
+        toolBar = localView.findViewById<MaterialToolbar>(R.id.chatAppBar)
 
         appViewModel = ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
 
 
+
         if (appViewModel.appRepository.userType == END_USER) {
 
-            toolBar.menu.findItem(R.id.confirmOrder).isVisible = true
+
+            toolBar.menu.findItem(R.id.confirmOrder).isVisible = false
             toolBar.menu.findItem(R.id.updateLocation).isVisible = true
             //Shop passed in when tile selected, so cannot be null
             toolBar.title = appViewModel.selectedShop!!.shopName
+
+            val orderObserver = Observer<Boolean> { orderPlaced ->
+                run {
+                    toolBar.menu.findItem(R.id.confirmOrder).isVisible = orderPlaced
+                }
+            }
+
+            appViewModel.orderRequested.observe(viewLifecycleOwner, orderObserver)
+
+            deliveryAddress = appViewModel.userData.address!!
+
+            var orderListener =
+                EventListener<DocumentSnapshot> { value, error ->
+                    val localOrder = value?.toObject<OrderDataModel>()
+                    if (localOrder != null) {
+                        appViewModel.orderRequested.value = localOrder.orderRequested
+
+                        if (localOrder.orderConfirmed) {
+                            Snackbar.make(
+                                requireActivity().findViewById(android.R.id.content),
+                                "Order confirmed",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        } else if (!localOrder.orderConfirmed) {
+                            Snackbar.make(
+                                requireActivity().findViewById(android.R.id.content),
+                                "No order placed",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+
+
+            val addressObserver = Observer<Address> { newStatus ->
+                run {
+                    if (newStatus != null) {
+                        deliveryAddress = newStatus.getAddressLine(0)
+                        appViewModel.fireStoreRepository.updateOrderDetails(
+                            appViewModel.orderID!!,
+                            "deliveryAddress",
+                            deliveryAddress,
+                            object : FirestoreRepository.OnOrderUpdated {
+                                override fun onSuccess(success: Boolean) {
+                                    if (success) {
+                                        Snackbar.make(
+                                            requireActivity().findViewById(android.R.id.content),
+                                            "Location updated",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                    } else {
+                                        Snackbar.make(
+                                            requireActivity().findViewById(android.R.id.content),
+                                            "Unable to update location",
+                                            Snackbar.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+
+                            })
+
+
+                    }
+                }
+            }
+
+            listenerRegistration = appViewModel.fireStoreRepository.attachOrderListener(
+                appViewModel.orderID!!,
+                orderListener
+            )
+
+
+            appViewModel.address.observe(viewLifecycleOwner, addressObserver)
+
+
         } else {
+            toolBar.menu.findItem(R.id.cancelOrder).isVisible = false
             toolBar.menu.findItem(R.id.placeOrder).isVisible = true
         }
 
@@ -59,6 +149,14 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
         return localView
 
+    }
+
+
+    override fun onPause() {
+        listenerRegistration?.remove()
+        localView.findNavController()
+            .popBackStack()
+        super.onPause()
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
@@ -74,17 +172,59 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
                 true
             }
             R.id.placeOrder -> {
+                appViewModel.fireStoreRepository.updateOrderDetails(
+                    appViewModel.orderID!!,
+                    "orderRequested",
+                    true,
+                    object : FirestoreRepository.OnOrderUpdated {
 
+                        override fun onSuccess(success: Boolean) {
+                            toolBar.menu.findItem(R.id.placeOrder).isVisible = !success
+                            toolBar.menu.findItem(R.id.cancelOrder).isVisible = success
+                        }
+
+                    })
                 true
             }
             R.id.confirmOrder -> {
+                appViewModel.fireStoreRepository.updateOrderDetails(
+                    appViewModel.orderID!!,
+                    "orderConfirmed",
+                    true,
+                    object : FirestoreRepository.OnOrderUpdated {
 
+                        override fun onSuccess(success: Boolean) {
+                            if (success) {
+                                Snackbar.make(
+                                    requireActivity().findViewById(android.R.id.content),
+                                    "Order successfully placed",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
+                                toolBar.menu.findItem(R.id.confirmOrder).isVisible = false
+                            }
+                        }
+
+                    })
+                true
+            }
+            R.id.cancelOrder -> {
+                appViewModel.fireStoreRepository.updateOrderDetails(
+                    appViewModel.orderID!!,
+                    "orderRequested",
+                    true,
+                    object : FirestoreRepository.OnOrderUpdated {
+
+                        override fun onSuccess(success: Boolean) {
+                            toolBar.menu.findItem(R.id.placeOrder).isVisible = success
+                            toolBar.menu.findItem(R.id.cancelOrder).isVisible = !success
+                        }
+
+                    })
                 true
             }
             else -> false
         }
     }
-
 
 
 }

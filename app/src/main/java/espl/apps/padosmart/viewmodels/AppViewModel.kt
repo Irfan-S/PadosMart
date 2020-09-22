@@ -9,6 +9,7 @@ import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AppRepository
 import espl.apps.padosmart.repository.AuthRepository
+import espl.apps.padosmart.repository.ChatRepository
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.END_USER
@@ -18,16 +19,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val TAG = "UserViewModel"
 
     val authRepository = AuthRepository(app)
-
     val appRepository = AppRepository(app)
-
     val fireStoreRepository = FirestoreRepository(app)
+    val chatRepository = ChatRepository()
+
+    var orderID: String? = null
+
+    var firebaseUser = authRepository.getFirebaseUser()
 
     var userData: UserDataModel = UserDataModel()
     var shopData = ShopDataModel()
 
 
-    var newOrder = OrderDataModel()
+    var newOrder: OrderDataModel? = null
 
     var selectedShop: ShopDataModel? = null
     var selectedOrder: OrderDataModel? = null
@@ -36,6 +40,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val address: MutableLiveData<Address> by lazy {
         MutableLiveData<Address>(null)
+    }
+
+    val orderRequested: MutableLiveData<Boolean> by lazy {
+        MutableLiveData<Boolean>(false)
     }
 
     val isAddressFetchInProgress: MutableLiveData<Boolean> by lazy {
@@ -71,6 +79,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             }
         })
     }
+
 
     fun fetchNewShops() {
 

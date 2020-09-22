@@ -7,6 +7,12 @@
         android:title="Place Order"
         app:showAsAction="always" />
     <item
+        android:id="@+id/cancelOrder"
+        android:icon="@android:drawable/ic_delete"
+        android:title="Cancel Order"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/updateLocation"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:title="Update Location"

@@ -9,7 +9,6 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import espl.apps.padosmart.R
-import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.utils.SHOP_USER
@@ -47,26 +46,25 @@ class AppRepository(val context: Context) {
     }
 
 
-
-    //TODO function that attaches to chat bucket, for live order editing by both parties before deleting.
-
-    fun addOrderToShopNode(order: OrderDataModel, onOrderAdded: FirestoreRepository.OnOrderAdded) {
-        //TODO assert all order field are not null
-        fireStoreRepository.addOrderToFirestore(order, object : FirestoreRepository.OnOrderAdded {
-            //After adding data into firestore, fetch its ID and assign into shop.
-            override fun onSuccess(boolean: Boolean) {
-                if (boolean) {
-                    firebaseDatabaseReference.child(context.getString(R.string.firebase_shop_orderhistory))
-                        .child(order.orderID!!).setValue(order)
-                        .addOnSuccessListener {
-                            onOrderAdded.onSuccess(true)
-                        }.addOnFailureListener {
-                            onOrderAdded.onSuccess(false)
-                        }
-                }
-            }
-        })
-    }
+//    //TODO function that attaches to chat bucket, for live order editing by both parties before deleting. As of now, just switch to firestore and query directly
+//
+//    fun addOrderToShopNode(order: OrderDataModel, onOrderAdded: FirestoreRepository.OnOrderAdded) {
+//        //TODO assert all order field are not null
+//        fireStoreRepository.addOrderToFirestore(order, object : FirestoreRepository.OnOrderAdded {
+//            //After adding data into firestore, fetch its ID and assign into shop.
+//            override fun onSuccess(boolean: Boolean) {
+//                if (boolean) {
+//                    firebaseDatabaseReference.child(context.getString(R.string.firebase_shop_orderhistory))
+//                        .child(order.orderID!!).setValue(order)
+//                        .addOnSuccessListener {
+//                            onOrderAdded.onSuccess(true)
+//                        }.addOnFailureListener {
+//                            onOrderAdded.onSuccess(false)
+//                        }
+//                }
+//            }
+//        })
+//    }
 
     /**
      * Fetches all shops in the firestore database
@@ -88,23 +86,26 @@ class AppRepository(val context: Context) {
             }
     }
 
-    //TODO implement order features
 
-    fun addOrderToUserNode(order: OrderDataModel, onOrderAdded: FirestoreRepository.OnOrderAdded) {
-        fireStoreRepository.addOrderToFirestore(order, object : FirestoreRepository.OnOrderAdded {
-            //After adding data into firestore, fetch its ID and assign into shop.
-            override fun onSuccess(boolean: Boolean) {
-                if (boolean) {
-                    firebaseDatabaseReference.child(context.getString(R.string.firebase_user_orderhistory))
-                        .child(order.orderID!!).setValue(order)
-                        .addOnSuccessListener {
-                            onOrderAdded.onSuccess(true)
-                        }.addOnFailureListener {
-                            onOrderAdded.onSuccess(false)
-                        }
-                }
-            }
-        })
-    }
+//
+//    //TODO implement order features. As of now, move everything and query on firestore.
+//
+//    fun addOrderToUserNode(order: OrderDataModel, onOrderAdded: FirestoreRepository.OnOrderAdded) {
+//        fireStoreRepository.addOrderToFirestore(order, object : FirestoreRepository.OnOrderAdded {
+//            //After adding data into firestore, fetch its ID and assign into shop.
+//            override fun onSuccess(boolean: Boolean) {
+//                if (boolean) {
+//                    firebaseDatabaseReference.child(context.getString(R.string.firebase_user_orderhistory))
+//                        .child(order.orderID!!).setValue(order)
+//                        .addOnSuccessListener {
+//                            onOrderAdded.onSuccess(true)
+//                        }.addOnFailureListener {
+//                            onOrderAdded.onSuccess(false)
+//                        }
+//                }
+//            }
+//        })
+//    }
+
 
 }

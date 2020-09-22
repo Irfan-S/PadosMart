@@ -6,11 +6,15 @@ data class OrderDataModel(
     var orderID: String? = null,
     var customerID: String? = null,
     var customerName: String? = null,
-    var shopID: String? = null,
     var shopName: String? = null,
     var orderStatus: Int? = null,
     var orderDeliveryLocation: String? = null,
     var orderPlacedTimeInMillis: Timestamp? = null,
     var orderDeliveredTimeInMillis: Timestamp? = null,
-    var paymentType: Int? = null
+    var paymentType: Int? = null,
+    var deliveryAddress: String? = null,
+    var shopPublicID: String,
+    var orderRequested: Boolean = false,
+    var orderConfirmed: Boolean = false,
+    var chats: ArrayList<String>? = ArrayList()
 )

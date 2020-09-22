@@ -2,8 +2,7 @@ package espl.apps.padosmart.repository
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -31,18 +30,39 @@ class FirestoreRepository(private var context: Context) {
         mAuth = FirebaseAuth.getInstance()
         firebaseStorage = Firebase.storage
     }
-    //TODO allow orders to be fed into the parent calls as well?
 
+    //TODO allow orders to be fed into the parent calls as well?
     fun addOrderToFirestore(order: OrderDataModel, onOrderAdded: OnOrderAdded) {
         val id = fireStoreDB.collection(context.getString(R.string.firestore_orders)).document().id
         order.orderID = id
         fireStoreDB.collection(context.getString(R.string.firestore_orders)).add(order)
             .addOnSuccessListener {
-                onOrderAdded.onSuccess(true)
+                onOrderAdded.onSuccess(id, true)
             }.addOnFailureListener {
-                onOrderAdded.onSuccess(false)
+                onOrderAdded.onSuccess(id, false)
             }
     }
+
+    fun updateOrderDetails(
+        orderID: String,
+        orderObject: String,
+        details: Any,
+        onOrderUpdated: OnOrderUpdated
+    ) {
+        fireStoreDB.collection(context.getString(R.string.firestore_orders)).document(orderID)
+            .update(orderObject, details).addOnCompleteListener {
+            onOrderUpdated.onSuccess(it.isSuccessful)
+        }
+    }
+
+    fun attachOrderListener(
+        orderID: String,
+        listener: EventListener<DocumentSnapshot>
+    ): ListenerRegistration {
+        return fireStoreDB.collection(context.getString(R.string.firestore_orders))
+            .document(orderID).addSnapshotListener(listener)
+    }
+
 
     fun fetchRecentShops(numOfShops: Long, onShopsFetched: OnShopsFetched) {
         val resp = ArrayList<ShopDataModel>()
@@ -77,6 +97,7 @@ class FirestoreRepository(private var context: Context) {
             }
     }
 
+    //TODO fetch shop details and add to orders list as it is incomplete
     fun fetchShopDetails(shopPublicID: String) {
 
     }
@@ -98,7 +119,11 @@ class FirestoreRepository(private var context: Context) {
     }
 
     interface OnOrderAdded {
-        fun onSuccess(boolean: Boolean)
+        fun onSuccess(orderID: String, boolean: Boolean)
+    }
+
+    interface OnOrderUpdated {
+        fun onSuccess(success: Boolean)
     }
 
     interface OnOrdersFetched {
