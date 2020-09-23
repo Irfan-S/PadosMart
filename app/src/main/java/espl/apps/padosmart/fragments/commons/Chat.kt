@@ -3,15 +3,12 @@ package espl.apps.padosmart.fragments.commons
 import android.location.Address
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentSnapshot
@@ -25,9 +22,10 @@ import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.viewmodels.AppViewModel
 
+
 class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    val TAG = "ChatActivity"
+    val TAG = "ChatFragment"
 
 
     private lateinit var localView: View
@@ -54,6 +52,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
         toolBar = localView.findViewById<MaterialToolbar>(R.id.chatAppBar)
 
+
         appViewModel = ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
 
 
@@ -76,7 +75,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
             deliveryAddress = appViewModel.userData.address!!
 
-            var orderListener =
+            val orderListener =
                 EventListener<DocumentSnapshot> { value, error ->
                     val localOrder = value?.toObject<OrderDataModel>()
                     if (localOrder != null) {
@@ -102,6 +101,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
             val addressObserver = Observer<Address> { newStatus ->
                 run {
                     if (newStatus != null) {
+                        Log.d(TAG, "New address updated: $newStatus")
                         deliveryAddress = newStatus.getAddressLine(0)
                         appViewModel.fireStoreRepository.updateOrderDetails(
                             appViewModel.orderID!!,
@@ -137,6 +137,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
             )
 
 
+
             appViewModel.address.observe(viewLifecycleOwner, addressObserver)
 
 
@@ -144,6 +145,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
             toolBar.menu.findItem(R.id.cancelOrder).isVisible = false
             toolBar.menu.findItem(R.id.placeOrder).isVisible = true
         }
+        toolBar.setOnMenuItemClickListener(this)
 
         //TODO complete chat UI and its implementation.
 
@@ -151,16 +153,41 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener {
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.commons_chat_menu, menu)
+    }
 
     override fun onPause() {
         listenerRegistration?.remove()
-        localView.findNavController()
-            .popBackStack()
+        if (appViewModel.appRepository.userType == END_USER) {
+            appViewModel.fireStoreRepository.updateOrderDetails(
+                appViewModel.orderID!!,
+                "isCustomerOnline",
+                false,
+                object : FirestoreRepository.OnOrderUpdated {
+                    override fun onSuccess(success: Boolean) {
+                        if (success) {
+                            parentFragment?.findNavController()
+                                ?.popBackStack()
+                        } else {
+                            Snackbar.make(
+                                requireActivity().findViewById(android.R.id.content),
+                                "Unable to connect to servers",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+
+                })
+        }
+
         super.onPause()
     }
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
-        return when (item!!.itemId) {
+        Log.d(TAG, "Menu item clicked: ${item!!.itemId}")
+        return when (item.itemId) {
             R.id.updateLocation -> {
                 appViewModel.locationService!!.checkGpsStatus()
                 if ((activity as UserBase).foregroundPermissionApproved()) {

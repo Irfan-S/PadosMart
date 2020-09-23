@@ -4,9 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/newOrdersRecyclerView"
         android:layout_width="match_parent"
@@ -22,5 +19,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/include"
         app:layout_constraintVertical_bias="0.0"
-        tools:listitem="@layout/element_home_shop_tile" />
+        tools:listitem="@layout/element_commons_chat_tile" />
 </androidx.constraintlayout.widget.ConstraintLayout>

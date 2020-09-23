@@ -282,6 +282,9 @@ class Login : Fragment(), View.OnClickListener {
                                                             getString(R.string.firestore_shops)
                                                         ).document().id
                                                     shopDataModel.shopPublicID = id
+                                                    shopDataModel.isOnline = true
+                                                    shopDataModel.shopCreationDate =
+                                                        appViewModel.getDate()
                                                     appViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :

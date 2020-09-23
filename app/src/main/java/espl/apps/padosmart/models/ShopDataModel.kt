@@ -16,6 +16,11 @@ data class ShopDataModel(
     var country: String? = null,
     var DOB: String? = null,
     var gender: Int? = null,
+
+    //TODO All shops initialized to 5 stars?
+    var shopTotalRating: Double? = 5.0,
+    var shopTotalRatingCount: Int? = 1,
+    var isOnline: Boolean = false,
     var shopCreationDate: Timestamp? = null,
     var shopVisitCount: Long? = 0,
     var shopPrivateID: String? = null,

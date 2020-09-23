@@ -169,6 +169,8 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
                     appViewModel.shopData.country = countryEditText.text.toString()
                     appViewModel.shopData.pinCode = pinCodeEditText.text.toString()
 
+                    saveGenderData(genderRadioGroup.checkedRadioButtonId)
+
                     appViewModel.authRepository.getFirebaseUser()!!
                         .updateEmail(appViewModel.shopData.email.toString())
                         .addOnCompleteListener { task ->
@@ -226,7 +228,7 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
         }
     }
 
-    override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
+    fun saveGenderData(checkedId: Int) {
         when (checkedId) {
             R.id.maleRadioButton -> {
                 appViewModel.shopData.gender = GENDER_MALE
@@ -238,6 +240,10 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
                 appViewModel.shopData.gender = GENDER_OTHERS
             }
         }
+    }
+
+    override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
+        saveGenderData(checkedId)
     }
 
 }

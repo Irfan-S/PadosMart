@@ -5,6 +5,7 @@
         android:id="@+id/placeOrder"
         android:icon="@android:drawable/ic_input_add"
         android:title="Place Order"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/cancelOrder"
@@ -16,10 +17,12 @@
         android:id="@+id/updateLocation"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:title="Update Location"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/confirmOrder"
         android:icon="@android:drawable/presence_online"
         android:title="Confirm Order"
+        android:visible="false"
         app:showAsAction="always" />
 </menu>

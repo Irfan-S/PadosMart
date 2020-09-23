@@ -37,7 +37,6 @@ class AuthRepository(private var context: Context) {
 
     private val firebaseStorage: FirebaseStorage
 
-
     init {
         firebaseAuthDatabaseReference =
             Firebase.database.getReference(context.getString(R.string.firebase_access_permission_node))
@@ -101,7 +100,7 @@ class AuthRepository(private var context: Context) {
 
 
             override fun onDataChange(p0: DataSnapshot) {
-                Log.d(TAG, "Shop found with response ${p0.value}")
+                Log.d(TAG, "User found with response ${p0.value}")
                 respModel = p0.getValue<UserDataModel>()
                 if (respModel == null) {
                     callback.onDataFetch(UserDataModel())
@@ -140,6 +139,7 @@ class AuthRepository(private var context: Context) {
         }
 
     }
+
 
     //TODO add checks in place for sending verified data over once complete. Streamline data flow instead of multiple callback nested loops.
 
@@ -180,6 +180,7 @@ class AuthRepository(private var context: Context) {
             }
         }
     }
+
 
     fun uploadShopImages(images: List<Image>, callback: ShopImgURIInterface) {
         val path = context.getString(R.string.storage_shopinfo) + user!!.phoneNumber

@@ -1,6 +1,7 @@
 package espl.apps.padosmart.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
@@ -35,7 +36,8 @@ class FirestoreRepository(private var context: Context) {
     fun addOrderToFirestore(order: OrderDataModel, onOrderAdded: OnOrderAdded) {
         val id = fireStoreDB.collection(context.getString(R.string.firestore_orders)).document().id
         order.orderID = id
-        fireStoreDB.collection(context.getString(R.string.firestore_orders)).add(order)
+        fireStoreDB.collection(context.getString(R.string.firestore_orders))
+            .document(order.orderID!!).set(order)
             .addOnSuccessListener {
                 onOrderAdded.onSuccess(id, true)
             }.addOnFailureListener {
@@ -51,8 +53,9 @@ class FirestoreRepository(private var context: Context) {
     ) {
         fireStoreDB.collection(context.getString(R.string.firestore_orders)).document(orderID)
             .update(orderObject, details).addOnCompleteListener {
-            onOrderUpdated.onSuccess(it.isSuccessful)
-        }
+                Log.d(TAG, "Task : ${it.result}")
+                onOrderUpdated.onSuccess(it.isSuccessful)
+            }
     }
 
     fun attachOrderListener(
@@ -88,6 +91,20 @@ class FirestoreRepository(private var context: Context) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
             .whereEqualTo(queryArg, queryID).limit(limit).get().addOnSuccessListener { documents ->
+                for (document in documents) {
+                    resp.add(document.toObject() as OrderDataModel)
+                }
+                onOrdersFetched.onSuccess(resp)
+            }.addOnFailureListener {
+                onOrdersFetched.onSuccess(resp)
+            }
+    }
+
+    fun fetchOnlineCustomersFromFirestore(shopID: String, onOrdersFetched: OnOrdersFetched) {
+        val resp = ArrayList<OrderDataModel>()
+        fireStoreDB.collection(context.getString(R.string.firestore_orders))
+            .whereEqualTo("shopPublicID", shopID)
+            .whereEqualTo("customerOnline", true).get().addOnSuccessListener { documents ->
                 for (document in documents) {
                     resp.add(document.toObject() as OrderDataModel)
                 }

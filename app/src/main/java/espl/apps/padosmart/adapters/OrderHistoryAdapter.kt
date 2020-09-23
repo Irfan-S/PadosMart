@@ -3,7 +3,7 @@ package espl.apps.padosmart.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
@@ -48,7 +48,6 @@ class OrderHistoryAdapter(
 
         private var listenerRef: WeakReference<ButtonListener>? = null
         fun bindItems(order: OrderDataModel) {
-
             val name = if (orderType == QUERY_ARG_USER) {
                 order.shopName
             } else {
@@ -59,6 +58,7 @@ class OrderHistoryAdapter(
             nameTextView.text = name
             val shopStatusTextView = itemView.findViewById(R.id.orderStatusText) as TextView
 
+
             shopStatusTextView.text = when (order.orderStatus) {
                 ORDER_STATUS_DELIVERED -> "delivered"
                 ORDER_STATUS_CANCELLED -> "cancelled"
@@ -68,8 +68,8 @@ class OrderHistoryAdapter(
 
             listenerRef = WeakReference(listener)
 
-            val orderDetailsButton = itemView.findViewById<Button>(R.id.viewDetailsButton)
-            orderDetailsButton.setOnClickListener(this)
+            val messageListTile = itemView.findViewById<LinearLayout>(R.id.messageListTile)
+            messageListTile?.setOnClickListener(this)
 
 
         }

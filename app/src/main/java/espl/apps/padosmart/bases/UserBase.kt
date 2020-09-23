@@ -84,7 +84,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             SHOP_USER -> {
                 setContentView(R.layout.base_shop_activity)
                 Log.d(TAG, "in shop base")
-
                 appViewModel.loadShopData()
 
                 toolbar = findViewById<MaterialToolbar>(R.id.shopHomeAppBar)

@@ -9,15 +9,16 @@
         android:id="@+id/shopNewOrders"
         android:name="espl.apps.padosmart.fragments.shop.ShopNewOrders"
         android:label="ShopNewOrders"
-        tools:layout="@layout/fragment_new_orders_shop" />
+        tools:layout="@layout/fragment_new_orders_shop">
+        <action
+            android:id="@+id/action_shopNewOrders_to_shopChat"
+            app:destination="@id/shopChat" />
+    </fragment>
     <fragment
         android:id="@+id/shopCurrentOrders"
         android:name="espl.apps.padosmart.fragments.shop.ShopCurrentOrders"
         android:label="ShopCurrentOrders"
         tools:layout="@layout/fragment_current_orders_shop">
-        <action
-            android:id="@+id/action_shopCurrentOrders_to_chat"
-            app:destination="@id/shopChat" />
     </fragment>
     <fragment
         android:id="@+id/shopOldOrders"
