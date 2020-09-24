@@ -1,5 +1,10 @@
 package espl.apps.padosmart.models
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+
+@Parcelize
 data class UserDataModel(
     var name: String? = null,
     var phone: String? = null,
@@ -10,4 +15,4 @@ data class UserDataModel(
     var state: String? = null,
     var country: String? = null,
     var orderHistory: ArrayList<OrderDataModel> = ArrayList()
-)
+) : Parcelable

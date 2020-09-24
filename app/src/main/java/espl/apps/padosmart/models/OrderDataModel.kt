@@ -1,9 +1,10 @@
 package espl.apps.padosmart.models
 
 
-import com.google.firebase.Timestamp
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-
+@Parcelize
 data class OrderDataModel(
     var orderID: String? = null,
     var customerID: String? = null,
@@ -12,12 +13,10 @@ data class OrderDataModel(
     var orderStatus: Int? = null,
     var customerOnline: Boolean? = true,
     var orderDeliveryLocation: String? = null,
-    var orderPlacedTimeInMillis: Timestamp? = null,
-    var orderDeliveredTimeInMillis: Timestamp? = null,
+    var orderPlacedTimeInMillis: Long? = null,
+    var orderDeliveredTimeInMillis: Long? = null,
     var paymentType: Int? = null,
     var deliveryAddress: String? = null,
     var shopPublicID: String? = null,
-    var orderRequested: Boolean = false,
-    var orderConfirmed: Boolean = false,
-    var chats: ArrayList<String>? = ArrayList()
-)
+    var chats: ArrayList<ChatDataModel>? = ArrayList()
+) : Parcelable

@@ -26,13 +26,15 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.BuildConfig
 import espl.apps.padosmart.R
+import espl.apps.padosmart.models.ShopDataModel
+import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.*
 import espl.apps.padosmart.viewmodels.AppViewModel
 
 class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
 
-    private val TAG = "EndUserBase"
+    private val TAG = "UserBase"
 
     private var foregroundOnlyLocationServiceBound = false
 
@@ -52,7 +54,15 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val respShop = intent.getParcelableExtra<ShopDataModel>("shopData")
+        val respUser = intent.getParcelableExtra<UserDataModel>("userData")
+
         appViewModel = ViewModelProvider(this).get(AppViewModel::class.java)
+        if (respUser != null) {
+            appViewModel.userData = respUser
+        } else if (respShop != null) {
+            appViewModel.shopData = respShop
+        }
 
         locationBroadcastReceiver = LocationBroadcastReceiver()
 
@@ -61,7 +71,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
                 setContentView(R.layout.base_user_activity)
                 Log.d(TAG, "in end user base")
                 profileNavDirections = R.id.profileFragmentUser
-                appViewModel.loadUserData()
 
                 toolbar = findViewById<MaterialToolbar>(R.id.userHomeAppBar)
                 toolbar.setNavigationOnClickListener(this)
@@ -84,7 +93,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             SHOP_USER -> {
                 setContentView(R.layout.base_shop_activity)
                 Log.d(TAG, "in shop base")
-                appViewModel.loadShopData()
 
                 toolbar = findViewById<MaterialToolbar>(R.id.shopHomeAppBar)
                 toolbar.setNavigationOnClickListener(this)

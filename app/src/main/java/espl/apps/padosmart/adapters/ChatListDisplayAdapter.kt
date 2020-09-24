@@ -16,13 +16,14 @@ class ChatListDisplayAdapter(
 ) :
     RecyclerView.Adapter<ChatListDisplayAdapter.ChatHolder>() {
 
+    private val TAG = "ChatListAdapter"
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): ChatHolder {
         val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.element_commons_chat_tile, parent, false)
+            .inflate(R.layout.element_commons_chatlist_tile, parent, false)
         return ChatHolder(v, buttonListener)
     }
 
@@ -53,7 +54,7 @@ class ChatListDisplayAdapter(
             if (order.chats!!.isEmpty()) {
                 chatPeekTextView.text = "No message from user"
             } else {
-                chatPeekTextView.text = order.chats?.get(0) ?: "No message from user"
+                chatPeekTextView.text = order.chats?.get(0)!!.message ?: "No message from user"
             }
 
             listenerRef = WeakReference(listener)

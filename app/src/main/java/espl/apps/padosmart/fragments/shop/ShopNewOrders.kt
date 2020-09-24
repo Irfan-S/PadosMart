@@ -35,11 +35,10 @@ class ShopNewOrders : Fragment() {
 
         val appViewModel: AppViewModel =
             ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
-        if (appViewModel.shopData.shopPublicID != null) {
-            appViewModel.getOnlineCustomerList(
-                appViewModel.shopData.shopPublicID!!
-            )
-        }
+
+        appViewModel.getOnlineCustomerList(
+            appViewModel.shopData.shopPublicID!!
+        )
 
         val exerciseRecyclerView: RecyclerView = view.findViewById(R.id.newOrdersRecyclerView)
         exerciseRecyclerView.layoutManager = linearLayoutManager

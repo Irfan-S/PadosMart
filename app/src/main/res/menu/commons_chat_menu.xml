@@ -21,7 +21,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/confirmOrder"
-        android:icon="@android:drawable/presence_online"
+        android:icon="@drawable/ef_ic_done_white"
         android:title="Confirm Order"
         android:visible="false"
         app:showAsAction="always" />

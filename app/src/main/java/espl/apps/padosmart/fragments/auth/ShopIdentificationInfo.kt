@@ -102,7 +102,7 @@ class ShopIdentificationInfo : Fragment(), View.OnClickListener {
             if (shopImage) {
                 appViewModel.authRepository.uploadShopImages(
                     images,
-                    object : AuthRepository.ShopImgURIInterface {
+                    object : AuthRepository.ImgURIInterface {
                         override fun onUploadCallback(
                             reference: StorageReference?,
                             success: Boolean

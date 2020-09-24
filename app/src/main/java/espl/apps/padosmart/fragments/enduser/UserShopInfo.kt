@@ -16,6 +16,7 @@ import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.repository.FirestoreRepository
+import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
 import espl.apps.padosmart.viewmodels.AppViewModel
 import java.util.concurrent.TimeUnit
 
@@ -59,7 +60,8 @@ class UserShopInfo : Fragment() {
                 deliveryAddress = appViewModel.userData.address,
                 customerID = appViewModel.firebaseUser!!.uid,
                 shopPublicID = appViewModel.selectedShop!!.shopPublicID!!,
-                customerOnline = true
+                customerOnline = true,
+                orderStatus = ORDER_STATUS_NOT_PLACED
             )
             appViewModel.fireStoreRepository.addOrderToFirestore(orderModel,
                 object : FirestoreRepository.OnOrderAdded {
@@ -72,6 +74,7 @@ class UserShopInfo : Fragment() {
                                 Snackbar.LENGTH_LONG
                             ).show()
                         } else {
+                            appViewModel.selectedOrder = orderModel
                             appViewModel.orderID = orderID
                             view.findNavController()
                                 .navigate(R.id.action_userShopInfo_to_userChat)

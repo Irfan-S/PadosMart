@@ -10,6 +10,7 @@
     <string name="isShopFlag">isShop</string>
     <string name="storage_authdata">authdata/</string>
     <string name="storage_shopinfo">shopinfo/</string>
+    <string name="storage_chat">chatimgs/</string>
     <string name="firestore_shops">shops</string>
     <string name="firestore_orders">orders</string>
     <string name="firebase_user_orderhistory">orderHistory</string>

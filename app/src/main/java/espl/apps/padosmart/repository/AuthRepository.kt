@@ -182,8 +182,24 @@ class AuthRepository(private var context: Context) {
     }
 
 
-    fun uploadShopImages(images: List<Image>, callback: ShopImgURIInterface) {
+    fun uploadShopImages(images: List<Image>, callback: ImgURIInterface) {
         val path = context.getString(R.string.storage_shopinfo) + user!!.phoneNumber
+        for (image in images) {
+            val imgPath = path + "/" + UUID.randomUUID()
+            val ref = firebaseStorage.reference.child(imgPath)
+            ref.putFile(image.uri).addOnCompleteListener {
+                Log.d(TAG, "Upload completed for user image")
+                callback.onUploadCallback(ref, success = true)
+
+            }.addOnFailureListener {
+                callback.onUploadCallback(null, false)
+            }
+
+        }
+    }
+
+    fun uploadChatImages(images: List<Image>, callback: ImgURIInterface) {
+        val path = context.getString(R.string.storage_chat) + user!!.phoneNumber
         for (image in images) {
             val imgPath = path + "/" + UUID.randomUUID()
             val ref = firebaseStorage.reference.child(imgPath)
@@ -256,7 +272,7 @@ class AuthRepository(private var context: Context) {
         fun onUploadCallback(reference: StorageReference?, success: Boolean)
     }
 
-    interface ShopImgURIInterface {
+    interface ImgURIInterface {
         fun onUploadCallback(reference: StorageReference?, success: Boolean)
     }
 

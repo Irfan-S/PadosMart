@@ -51,6 +51,7 @@ class Login : Fragment(), View.OnClickListener {
 
     lateinit var countryCodePicker: CountryCodePicker
 
+
     lateinit var phoneAuthFields: LinearLayout
 
     private var phoneNumber: String? = null
@@ -248,8 +249,29 @@ class Login : Fragment(), View.OnClickListener {
                                             getString(R.string.intent_userType),
                                             END_USER
                                         )
-                                        startActivity(intent)
-                                        requireActivity().finish()
+                                        appViewModel.loadUserData(callback = object :
+                                            AuthRepository.AuthDataInterface {
+                                            override fun onAuthCallback(response: Long) {
+                                                if (response == END_USER.toLong()) {
+                                                    appViewModel.authRepository.getEndUserDataObject(
+                                                        callback = object :
+                                                            AuthRepository.UserDataInterface {
+                                                            override fun onUploadCallback(success: Boolean) {
+                                                                //Nothing
+                                                            }
+
+                                                            override fun onDataFetch(dataModel: UserDataModel) {
+                                                                appViewModel.userData = dataModel
+                                                                startActivity(intent)
+                                                                requireActivity().finish()
+                                                            }
+
+                                                        })
+                                                }
+                                            }
+
+                                        })
+
                                     }
                                     SHOP_USER.toLong() -> {
                                         Log.d(TAG, "User type: SHOP_USER")
@@ -258,8 +280,31 @@ class Login : Fragment(), View.OnClickListener {
                                             getString(R.string.intent_userType),
                                             SHOP_USER
                                         )
-                                        startActivity(intent)
-                                        requireActivity().finish()
+                                        appViewModel.loadShopData(callback = object :
+                                            AuthRepository.AuthDataInterface {
+                                            override fun onAuthCallback(response: Long) {
+                                                if (response == SHOP_USER.toLong()) {
+                                                    appViewModel.authRepository.fetchShopDataObject(
+                                                        object :
+                                                            AuthRepository.ShopDataFetch {
+                                                            override fun onFetchComplete(
+                                                                shopDataModel: ShopDataModel?
+                                                            ) {
+                                                                appViewModel.shopData =
+                                                                    shopDataModel!!
+                                                                Log.d(
+                                                                    TAG,
+                                                                    "Shop data: $shopDataModel"
+                                                                )
+                                                                startActivity(intent)
+                                                                requireActivity().finish()
+                                                            }
+                                                        })
+                                                }
+                                            }
+
+                                        })
+
                                     }
                                     SHOP_UNVERIFIED.toLong() -> {
                                         Log.d(TAG, "User type: SHOP unverified")

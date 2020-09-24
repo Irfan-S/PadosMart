@@ -5,7 +5,7 @@ import android.location.Address
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
+import espl.apps.padosmart.models.ChatDataModel
 import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
@@ -14,8 +14,7 @@ import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.repository.ChatRepository
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
-import espl.apps.padosmart.utils.END_USER
-import espl.apps.padosmart.utils.SHOP_USER
+import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
 
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
@@ -42,55 +41,28 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<Address>(null)
     }
 
-    val orderRequested: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>(false)
+    val orderStatus: MutableLiveData<Int> by lazy {
+        MutableLiveData<Int>(ORDER_STATUS_NOT_PLACED)
+    }
+
+    val chats: MutableLiveData<ArrayList<ChatDataModel>> by lazy {
+        MutableLiveData<ArrayList<ChatDataModel>>(ArrayList())
     }
 
     val isAddressFetchInProgress: MutableLiveData<Boolean> by lazy {
         MutableLiveData<Boolean>(false)
     }
 
-    fun loadUserData() {
-        authRepository.getFirebaseUserType(callback = object : AuthRepository.AuthDataInterface {
-            override fun onAuthCallback(response: Long) {
-                if (response == END_USER.toLong()) {
-                    authRepository.getEndUserDataObject(callback = object :
-                        AuthRepository.UserDataInterface {
-                        override fun onUploadCallback(success: Boolean) {
-                            //Nothing
-                        }
-
-                        override fun onDataFetch(dataModel: UserDataModel) {
-                            userData = dataModel
-                        }
-
-                    })
-                }
-            }
-
-        })
+    fun loadUserData(callback: AuthRepository.AuthDataInterface) {
+        authRepository.getFirebaseUserType(callback)
     }
 
-    fun getDate(): Timestamp {
-        return Timestamp.now()
+    fun getDate(): Long {
+        return System.currentTimeMillis()
     }
 
-    fun loadShopData() {
-        authRepository.getFirebaseUserType(callback = object : AuthRepository.AuthDataInterface {
-            override fun onAuthCallback(response: Long) {
-                if (response == SHOP_USER.toLong()) {
-                    authRepository.fetchShopDataObject(object :
-                        AuthRepository.ShopDataFetch {
-                        override fun onFetchComplete(shopDataModel: ShopDataModel?) {
-                            shopData = shopDataModel!!
-                            Log.d(TAG, "Shop data: $shopData")
-                        }
-                    })
-                }
-            }
-
-        })
-
+    fun loadShopData(callback: AuthRepository.AuthDataInterface) {
+        authRepository.getFirebaseUserType(callback)
     }
 
     var selectedOrder: OrderDataModel? = null

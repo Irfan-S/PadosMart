@@ -120,7 +120,8 @@ class FirestoreRepository(private var context: Context) {
     }
 
     fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnAuthFirestoreCallback) {
-        fireStoreDB.collection(context.getString(R.string.firestore_shops)).add(shopDataModel)
+        fireStoreDB.collection(context.getString(R.string.firestore_shops))
+            .document(shopDataModel.shopPublicID!!).set(shopDataModel)
             .addOnCompleteListener {
                 callback.onUploadSuccessful(true)
             }.addOnFailureListener {

@@ -7,6 +7,8 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
+import espl.apps.padosmart.models.ShopDataModel
+import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
@@ -44,7 +46,6 @@ class SplashScreenActivity : AppCompatActivity() {
 
 
         if (currentUser != null) {
-
             if (currentUser.isEmailVerified) {
                 authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
                     override fun onAuthCallback(response: Long) {
@@ -61,8 +62,19 @@ class SplashScreenActivity : AppCompatActivity() {
                                     getString(R.string.intent_userType),
                                     END_USER
                                 )
-                                startActivity(intent)
-                                finish()
+                                authRepository.getEndUserDataObject(callback = object :
+                                    AuthRepository.UserDataInterface {
+                                    override fun onUploadCallback(success: Boolean) {
+                                        //Nothing
+                                    }
+
+                                    override fun onDataFetch(dataModel: UserDataModel) {
+                                        intent.putExtra("userData", dataModel)
+                                        startActivity(intent)
+                                        finish()
+                                    }
+
+                                })
                             }
                             SHOP_USER.toLong() -> {
                                 Log.d(TAG, "User type: SHOP_USER")
@@ -71,8 +83,15 @@ class SplashScreenActivity : AppCompatActivity() {
                                     getString(R.string.intent_userType),
                                     SHOP_USER
                                 )
-                                startActivity(intent)
-                                finish()
+                                authRepository.fetchShopDataObject(object :
+                                    AuthRepository.ShopDataFetch {
+                                    override fun onFetchComplete(shopDataModel: ShopDataModel?) {
+                                        intent.putExtra("shopData", shopDataModel)
+                                        Log.d(TAG, "Shop data: $shopDataModel")
+                                        startActivity(intent)
+                                        finish()
+                                    }
+                                })
                             }
                             AUTH_ACCESS_FAILED.toLong() -> {
                                 Snackbar.make(

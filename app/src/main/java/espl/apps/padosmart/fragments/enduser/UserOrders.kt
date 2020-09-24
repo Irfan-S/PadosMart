@@ -69,6 +69,7 @@ class UserOrders : Fragment() {
                 }
             }
 
+        appViewModel.ordersList.observe(viewLifecycleOwner, ordersObserver)
 
 //        if (!orderViewModel.ordersList.value.isNullOrEmpty()) {
 //            //show empty screen
