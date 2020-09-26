@@ -12,6 +12,10 @@ import com.google.firebase.storage.ktx.storage
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.models.ShopDataModel
+import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
+import espl.apps.padosmart.utils.QUERY_ARG_CUSTOMER_ONLINE
+import espl.apps.padosmart.utils.QUERY_ARG_ORDER_STATUS
+import espl.apps.padosmart.utils.QUERY_ARG_SHOP_ID
 
 class FirestoreRepository(private var context: Context) {
 
@@ -45,6 +49,7 @@ class FirestoreRepository(private var context: Context) {
             }
     }
 
+
     fun updateOrderDetails(
         orderID: String,
         orderObject: String,
@@ -67,6 +72,20 @@ class FirestoreRepository(private var context: Context) {
     }
 
 
+    fun attachNewChatShopListener(
+        shopPublicID: String,
+        listener: EventListener<QuerySnapshot>
+    ): ListenerRegistration {
+        return fireStoreDB.collection(context.getString(R.string.firestore_orders)).whereEqualTo(
+            QUERY_ARG_SHOP_ID, shopPublicID
+        ).whereEqualTo(
+            QUERY_ARG_CUSTOMER_ONLINE, true
+        )
+            .whereEqualTo(QUERY_ARG_ORDER_STATUS, ORDER_STATUS_NOT_PLACED)
+            .addSnapshotListener(listener)
+    }
+
+
     fun fetchRecentShops(numOfShops: Long, onShopsFetched: OnShopsFetched) {
         val resp = ArrayList<ShopDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_shops))
@@ -82,6 +101,21 @@ class FirestoreRepository(private var context: Context) {
     }
 
 
+    fun updateShopDetails(
+        shopPublicID: String,
+        editNode: String,
+        value: Any,
+        onFirestoreCallback: OnFirestoreCallback
+    ) {
+        fireStoreDB.collection(context.getString(R.string.firestore_shops)).document(shopPublicID)
+            .update(
+                editNode, value
+            ).addOnCompleteListener {
+            onFirestoreCallback.onUploadSuccessful(it.isSuccessful)
+        }
+    }
+
+
     fun fetchQueryOrdersFromFirestore(
         queryID: String,
         queryArg: String,
@@ -91,6 +125,27 @@ class FirestoreRepository(private var context: Context) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
             .whereEqualTo(queryArg, queryID).limit(limit).get().addOnSuccessListener { documents ->
+                for (document in documents) {
+                    resp.add(document.toObject() as OrderDataModel)
+                }
+                onOrdersFetched.onSuccess(resp)
+            }.addOnFailureListener {
+                onOrdersFetched.onSuccess(resp)
+            }
+    }
+
+
+    fun fetchCompoundQueryOrdersFromFirestore(
+        queryID1: String,
+        queryArg1: String,
+        queryID2: String,
+        queryArg2: List<Any>,
+        onOrdersFetched: OnOrdersFetched,
+    ) {
+        val resp = ArrayList<OrderDataModel>()
+        fireStoreDB.collection(context.getString(R.string.firestore_orders))
+            .whereEqualTo(queryID1, queryArg1).whereIn(queryID2, queryArg2).get()
+            .addOnSuccessListener { documents ->
                 for (document in documents) {
                     resp.add(document.toObject() as OrderDataModel)
                 }
@@ -119,7 +174,7 @@ class FirestoreRepository(private var context: Context) {
 
     }
 
-    fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnAuthFirestoreCallback) {
+    fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnFirestoreCallback) {
         fireStoreDB.collection(context.getString(R.string.firestore_shops))
             .document(shopDataModel.shopPublicID!!).set(shopDataModel)
             .addOnCompleteListener {
@@ -132,7 +187,7 @@ class FirestoreRepository(private var context: Context) {
     //TODO implement order features
 
 
-    interface OnAuthFirestoreCallback {
+    interface OnFirestoreCallback {
         fun onUploadSuccessful(isSuccess: Boolean)
     }
 

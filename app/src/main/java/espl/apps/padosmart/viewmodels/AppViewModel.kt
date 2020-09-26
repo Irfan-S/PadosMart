@@ -14,6 +14,8 @@ import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.repository.ChatRepository
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
+import espl.apps.padosmart.utils.ORDER_STATUS_CONFIRMED
+import espl.apps.padosmart.utils.ORDER_STATUS_IN_PROGRESS
 import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
 
 
@@ -83,6 +85,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 ordersList.value = orderList
             }
         }, limit = 10)
+    }
+
+
+    fun getCurrentOrdersList(queryID: String, queryArg: String) {
+        Log.d(TAG, "fetching orders")
+        fireStoreRepository.fetchCompoundQueryOrdersFromFirestore(
+            queryID,
+            queryArg,
+            "orderStatus",
+            listOf(ORDER_STATUS_CONFIRMED, ORDER_STATUS_IN_PROGRESS),
+            object :
+                FirestoreRepository.OnOrdersFetched {
+                override fun onSuccess(orderList: ArrayList<OrderDataModel>) {
+                    Log.d(TAG, "Order list: $orderList")
+                    ordersList.value = orderList
+                }
+            })
     }
 
     fun getOnlineCustomerList(shopID: String) {

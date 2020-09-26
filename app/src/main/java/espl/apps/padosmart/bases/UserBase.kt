@@ -28,6 +28,7 @@ import espl.apps.padosmart.BuildConfig
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
+import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.*
 import espl.apps.padosmart.viewmodels.AppViewModel
@@ -93,6 +94,7 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             SHOP_USER -> {
                 setContentView(R.layout.base_shop_activity)
                 Log.d(TAG, "in shop base")
+                shopStatusSet(status = true)
 
                 toolbar = findViewById<MaterialToolbar>(R.id.shopHomeAppBar)
                 toolbar.setNavigationOnClickListener(this)
@@ -125,6 +127,7 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav?.setupWithNavController(navController)
     }
+
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when (item!!.itemId) {
@@ -217,6 +220,7 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
         if (foregroundOnlyLocationServiceBound) {
             unbindService(foregroundOnlyServiceConnection)
             foregroundOnlyLocationServiceBound = false
+            shopStatusSet(status = false)
         }
 
         super.onStop()
@@ -260,6 +264,19 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
                 REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
             )
         }
+    }
+
+    fun shopStatusSet(status: Boolean) {
+        appViewModel.fireStoreRepository.updateShopDetails(
+            appViewModel.shopData.shopPublicID!!,
+            "isOnline",
+            status,
+            object : FirestoreRepository.OnFirestoreCallback {
+                override fun onUploadSuccessful(isSuccess: Boolean) {
+                    Log.d(TAG, "Shop status updated")
+                }
+
+            })
     }
 
     override fun onRequestPermissionsResult(

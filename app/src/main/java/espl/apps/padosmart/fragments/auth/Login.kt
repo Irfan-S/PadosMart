@@ -333,7 +333,7 @@ class Login : Fragment(), View.OnClickListener {
                                                     appViewModel.fireStoreRepository.uploadShopDetails(
                                                         shopDataModel,
                                                         object :
-                                                            FirestoreRepository.OnAuthFirestoreCallback {
+                                                            FirestoreRepository.OnFirestoreCallback {
                                                             override fun onUploadSuccessful(
                                                                 isSuccess: Boolean
                                                             ) {

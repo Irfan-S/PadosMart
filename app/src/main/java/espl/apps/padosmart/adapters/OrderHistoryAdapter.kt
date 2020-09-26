@@ -8,15 +8,12 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
-import espl.apps.padosmart.utils.ORDER_STATUS_CANCELLED
-import espl.apps.padosmart.utils.ORDER_STATUS_DELIVERED
-import espl.apps.padosmart.utils.ORDER_STATUS_IN_PROGRESS
-import espl.apps.padosmart.utils.QUERY_ARG_USER
+import espl.apps.padosmart.utils.*
 import java.lang.ref.WeakReference
 
 class OrderHistoryAdapter(
     private val orderType: String,
-    private val orderList: ArrayList<OrderDataModel>,
+    private var orderList: ArrayList<OrderDataModel>,
     private val buttonListener: ButtonListener
 ) :
     RecyclerView.Adapter<OrderHistoryAdapter.OrderHolder>() {
@@ -39,6 +36,12 @@ class OrderHistoryAdapter(
         holder.bindItems(orderList[position])
     }
 
+
+    fun updateOrders(orderList: ArrayList<OrderDataModel>) {
+        this.orderList = orderList
+        notifyDataSetChanged()
+    }
+
     /**
      * Uses interface class to abstract out click listener to classes that can handle it. i.ExercisesFragment
      */
@@ -48,7 +51,7 @@ class OrderHistoryAdapter(
 
         private var listenerRef: WeakReference<ButtonListener>? = null
         fun bindItems(order: OrderDataModel) {
-            val name = if (orderType == QUERY_ARG_USER) {
+            val name = if (orderType == QUERY_ARG_USER_ID) {
                 order.shopName
             } else {
                 order.customerName
@@ -63,6 +66,7 @@ class OrderHistoryAdapter(
                 ORDER_STATUS_DELIVERED -> "delivered"
                 ORDER_STATUS_CANCELLED -> "cancelled"
                 ORDER_STATUS_IN_PROGRESS -> "In progress"
+                ORDER_STATUS_CONFIRMED -> "Confirmed"
                 else -> "N/A"
             }
 

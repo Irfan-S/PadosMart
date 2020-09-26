@@ -17,8 +17,11 @@ val PAYMENT_TYPE_CASH = 0
 val PAYMENT_TYPE_CARD = 1
 val PAYMENT_TYPE_MOBILE = 2
 
-val QUERY_ARG_USER = "customerID"
-val QUERY_ARG_SHOP = "shopID"
+val QUERY_ARG_USER_ID = "customerID"
+val QUERY_ARG_SHOP_ID = "shopPublicID"
+val QUERY_ARG_ORDER_STATUS = "orderStatus"
+val QUERY_ARG_CUSTOMER_ONLINE = "customerOnline"
+
 
 val ORDER_STATUS_NOT_PLACED = -1
 val ORDER_STATUS_REQUESTED = 0

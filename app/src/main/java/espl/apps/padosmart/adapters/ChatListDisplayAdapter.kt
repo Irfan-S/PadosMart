@@ -11,7 +11,7 @@ import espl.apps.padosmart.models.OrderDataModel
 import java.lang.ref.WeakReference
 
 class ChatListDisplayAdapter(
-    private val orderList: ArrayList<OrderDataModel>,
+    private var orderList: ArrayList<OrderDataModel>,
     private val buttonListener: ButtonListener
 ) :
     RecyclerView.Adapter<ChatListDisplayAdapter.ChatHolder>() {
@@ -35,6 +35,11 @@ class ChatListDisplayAdapter(
         holder.bindItems(orderList[position])
     }
 
+    fun updateChatList(orderList: ArrayList<OrderDataModel>) {
+        this.orderList = orderList
+        notifyDataSetChanged()
+    }
+
     /**
      * Uses interface class to abstract out click listener to classes that can handle it. i.ExercisesFragment
      */
@@ -54,7 +59,9 @@ class ChatListDisplayAdapter(
             if (order.chats!!.isEmpty()) {
                 chatPeekTextView.text = "No message from user"
             } else {
-                chatPeekTextView.text = order.chats?.get(0)!!.message ?: "No message from user"
+                chatPeekTextView.text =
+                    order.chats?.size?.minus(1)?.let { order.chats?.get(it) }!!.message
+                        ?: "No message from user"
             }
 
             listenerRef = WeakReference(listener)

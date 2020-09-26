@@ -14,7 +14,6 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -223,6 +222,17 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
     }
 
     override fun onPause() {
+        detachListenersAndSendOfflineMessage()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        detachListenersAndSendOfflineMessage()
+        super.onDestroy()
+    }
+
+
+    private fun detachListenersAndSendOfflineMessage() {
         listenerRegistration?.remove()
         if (appViewModel.appRepository.userType == END_USER) {
             appViewModel.fireStoreRepository.updateOrderDetails(
@@ -231,24 +241,12 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
                 false,
                 object : FirestoreRepository.OnOrderUpdated {
                     override fun onSuccess(success: Boolean) {
-                        if (success) {
-                            parentFragment?.findNavController()
-                                ?.popBackStack()
-                        } else {
-                            Snackbar.make(
-                                requireActivity().findViewById(android.R.id.content),
-                                "Unable to connect to servers",
-                                Snackbar.LENGTH_LONG
-                            ).show()
-                        }
+                        Log.d(TAG, "detachment :$success")
                     }
 
                 })
         }
-
-        super.onPause()
     }
-
 
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         Log.d(TAG, "Menu item clicked: ${item!!.itemId}")
