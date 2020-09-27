@@ -76,7 +76,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     //TODO add input limiting
     fun getOrdersList(queryID: String, queryArg: String) {
-
         Log.d(TAG, "fetching orders")
         fireStoreRepository.fetchQueryOrdersFromFirestore(queryID, queryArg, object :
             FirestoreRepository.OnOrdersFetched {

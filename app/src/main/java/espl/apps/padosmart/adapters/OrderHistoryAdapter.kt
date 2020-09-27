@@ -3,6 +3,7 @@ package espl.apps.padosmart.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -61,9 +62,11 @@ class OrderHistoryAdapter(
             nameTextView.text = name
             val shopStatusTextView = itemView.findViewById(R.id.orderStatusText) as TextView
 
+            val viewDetailsButton = itemView.findViewById<Button>(R.id.viewDetailsButton)
+            viewDetailsButton.setOnClickListener(this)
 
             shopStatusTextView.text = when (order.orderStatus) {
-                ORDER_STATUS_DELIVERED -> "delivered"
+                ORDER_STATUS_COMPLETED -> "delivered"
                 ORDER_STATUS_CANCELLED -> "cancelled"
                 ORDER_STATUS_IN_PROGRESS -> "In progress"
                 ORDER_STATUS_CONFIRMED -> "Confirmed"

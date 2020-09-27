@@ -17,6 +17,7 @@ import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
+import espl.apps.padosmart.utils.generateOTP
 import espl.apps.padosmart.viewmodels.AppViewModel
 import java.util.concurrent.TimeUnit
 
@@ -61,6 +62,7 @@ class UserShopInfo : Fragment() {
                 customerID = appViewModel.firebaseUser!!.uid,
                 shopPublicID = appViewModel.selectedShop!!.shopPublicID!!,
                 customerOnline = true,
+                OTP = generateOTP(),
                 orderStatus = ORDER_STATUS_NOT_PLACED
             )
             appViewModel.fireStoreRepository.addOrderToFirestore(orderModel,

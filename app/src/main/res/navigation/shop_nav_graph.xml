@@ -19,6 +19,9 @@
         android:name="espl.apps.padosmart.fragments.shop.ShopCurrentOrders"
         android:label="ShopCurrentOrders"
         tools:layout="@layout/fragment_current_orders_shop">
+        <action
+            android:id="@+id/action_shopCurrentOrders_to_shopOrder"
+            app:destination="@id/shopOrder" />
     </fragment>
     <fragment
         android:id="@+id/shopOldOrders"
@@ -35,4 +38,9 @@
         android:name="espl.apps.padosmart.fragments.commons.Chat"
         android:label="Chat"
         tools:layout="@layout/fragment_commons_chatscreen"></fragment>
+    <fragment
+        android:id="@+id/shopOrder"
+        android:name="espl.apps.padosmart.fragments.shop.ShopOrder"
+        android:label="ShopOrder"
+        tools:layout="@layout/fragment_order_shop" />
 </navigation>
