@@ -109,7 +109,6 @@ class ShopOrder : Fragment(), View.OnClickListener {
         }
     }
 
-    //TODO dialog doesn't show up!
     private fun showOTPAlertDialog() {
         val alertDialog: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         alertDialog.setTitle("Complete Order")
@@ -122,7 +121,7 @@ class ShopOrder : Fragment(), View.OnClickListener {
 
         val otpEntry = customLayout.findViewById<EditText>(R.id.otpShopEditText)
 
-        val alert: AlertDialog = alertDialog.create()
+
 
         alertDialog.setView(customLayout)
         alertDialog.setMessage("Enter the OTP to complete the order")
@@ -143,7 +142,6 @@ class ShopOrder : Fragment(), View.OnClickListener {
                                     "Order successfully completed.",
                                     Toast.LENGTH_LONG
                                 ).show()
-                                alert.cancel()
                             } else {
                                 Toast.makeText(
                                     requireContext(),
@@ -164,6 +162,7 @@ class ShopOrder : Fragment(), View.OnClickListener {
             "Cancel"
         ) { _, _ -> }
 
+        val alert: AlertDialog = alertDialog.create()
         alert.setCanceledOnTouchOutside(false)
         alert.show()
     }
@@ -173,8 +172,6 @@ class ShopOrder : Fragment(), View.OnClickListener {
         alertDialog.setTitle("Cancel Order")
         // set the custom layout
 
-
-        val alert: AlertDialog = alertDialog.create()
 
         alertDialog.setMessage("Are you sure want to cancel this order? Note that cancellation can negatively affect your reputation if your customer disapproves ")
         alertDialog.setPositiveButton(
@@ -192,7 +189,6 @@ class ShopOrder : Fragment(), View.OnClickListener {
                                 "Order cancelled successfully.",
                                 Toast.LENGTH_LONG
                             ).show()
-                            alert.cancel()
                         } else {
                             Toast.makeText(
                                 requireContext(),
@@ -209,6 +205,7 @@ class ShopOrder : Fragment(), View.OnClickListener {
             "No"
         ) { _, _ -> }
 
+        val alert: AlertDialog = alertDialog.create()
         alert.setCanceledOnTouchOutside(false)
         alert.show()
     }

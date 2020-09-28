@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -35,6 +36,8 @@ class ShopCurrentOrders : Fragment() {
 
         val appViewModel: AppViewModel =
             ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
+
+        val emptyTextView = view.findViewById<TextView>(R.id.emptyListTextView)
 
         appViewModel.getCurrentOrdersList(
             QUERY_ARG_SHOP_ID,
@@ -67,6 +70,11 @@ class ShopCurrentOrders : Fragment() {
             Observer<ArrayList<OrderDataModel>> { it ->
                 run {
                     Log.d(TAG, "Setting adapters")
+                    if (it.isEmpty()) {
+                        emptyTextView.visibility = View.VISIBLE
+                    } else {
+                        emptyTextView.visibility = View.GONE
+                    }
                     currentOrdersAdapter.updateOrders(it)
                 }
             }
