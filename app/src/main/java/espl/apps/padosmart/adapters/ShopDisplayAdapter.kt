@@ -10,12 +10,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.ShopDataModel
 import java.lang.ref.WeakReference
 
 class ShopDisplayAdapter(
-    private val shopList: ArrayList<ShopDataModel>,
+    private var shopList: ArrayList<ShopDataModel>,
     private val buttonListener: ButtonListener
 ) :
     RecyclerView.Adapter<ShopDisplayAdapter.ShopHolder>() {
@@ -44,6 +45,11 @@ class ShopDisplayAdapter(
         holder.bindItems(shopList[position])
     }
 
+    fun updateChats(shopList: java.util.ArrayList<ShopDataModel>) {
+        this.shopList = shopList
+        notifyDataSetChanged()
+    }
+
     /**
      * Uses interface class to abstract out click listener to classes that can handle it. i.ExercisesFragment
      */
@@ -61,6 +67,7 @@ class ShopDisplayAdapter(
             val shopDisplayImageView = itemView.findViewById(R.id.shopDisplayImg) as ImageView
 
             Glide.with(context).load(shop.shopImageURL)
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 .into(shopDisplayImageView)
             val shopTile = itemView.findViewById(R.id.elementShopTile) as LinearLayout
 

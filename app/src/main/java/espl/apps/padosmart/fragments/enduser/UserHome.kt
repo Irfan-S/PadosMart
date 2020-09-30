@@ -35,7 +35,6 @@ class UserHome : Fragment() {
             false
         )
 
-        var shopsList: ArrayList<ShopDataModel>
         val appViewModel: AppViewModel =
             ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
         val recentStoresRecyclerView: RecyclerView =
@@ -46,15 +45,21 @@ class UserHome : Fragment() {
         appViewModel.appRepository.fetchShops(object : FirestoreRepository.OnShopsFetched {
             override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
                 Log.d(TAG, "Length: ${shopList.size}")
-                shopsList = shopList
+                appViewModel.recentShopsList.value = shopList
                 val adapter =
-                    ShopDisplayAdapter(shopsList, object :
+                    ShopDisplayAdapter(appViewModel.recentShopsList.value!!, object :
                         ShopDisplayAdapter.ButtonListener {
                         override fun onButtonClick(position: Int) {
                             Log.d(TAG, "Position is $position")
                             //TODO open new chat window with selected shop
-                            Log.d(TAG, "Option selected is ${shopsList[position].shopPublicID}")
-                            appViewModel.selectedShop = shopsList[position]
+                            Log.d(
+                                TAG,
+                                "Option selected is ${appViewModel.recentShopsList.value!![position].shopPublicID}"
+                            )
+
+
+                            appViewModel.selectedShop =
+                                appViewModel.recentShopsList.value!![position]
 
                             view.findNavController()
                                 .navigate(R.id.action_homeFragmentUser_to_userShopInfo)
@@ -65,6 +70,8 @@ class UserHome : Fragment() {
                 recentStoresRecyclerView.adapter = adapter
             }
         })
+
+
 
 
 

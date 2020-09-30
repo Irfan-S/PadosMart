@@ -49,20 +49,23 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
 
     lateinit var toolbar: MaterialToolbar
 
+    var respShop: ShopDataModel? = null
+
     var profileNavDirections: Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val respShop = intent.getParcelableExtra<ShopDataModel>("shopData")
+        respShop = intent.getParcelableExtra<ShopDataModel>("shopData")
         val respUser = intent.getParcelableExtra<UserDataModel>("userData")
 
         appViewModel = ViewModelProvider(this).get(AppViewModel::class.java)
         if (respUser != null) {
             appViewModel.userData = respUser
         } else if (respShop != null) {
-            appViewModel.shopData = respShop
+            appViewModel.shopData = respShop as ShopDataModel
+            shopStatusSet(status = true)
         }
 
         locationBroadcastReceiver = LocationBroadcastReceiver()
@@ -94,7 +97,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             SHOP_USER -> {
                 setContentView(R.layout.base_shop_activity)
                 Log.d(TAG, "in shop base")
-                shopStatusSet(status = true)
 
                 toolbar = findViewById<MaterialToolbar>(R.id.shopHomeAppBar)
                 toolbar.setNavigationOnClickListener(this)
@@ -220,6 +222,10 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
         if (foregroundOnlyLocationServiceBound) {
             unbindService(foregroundOnlyServiceConnection)
             foregroundOnlyLocationServiceBound = false
+
+        }
+
+        if (respShop != null) {
             shopStatusSet(status = false)
         }
 

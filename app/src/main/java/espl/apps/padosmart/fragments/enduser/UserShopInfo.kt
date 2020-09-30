@@ -54,6 +54,10 @@ class UserShopInfo : Fragment() {
         addressText.text = "Address: ${appViewModel.selectedShop!!.address!!}"
 
 
+        appViewModel.updateShopCount()
+
+
+        //TODO check crashes on android 6.0
         startChatButton.setOnClickListener {
             val orderModel = OrderDataModel(
                 customerName = appViewModel.userData.name!!,

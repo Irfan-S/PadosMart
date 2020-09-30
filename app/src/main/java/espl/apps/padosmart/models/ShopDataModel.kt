@@ -32,4 +32,5 @@ data class ShopDataModel(
     var doesShopDeliver: Boolean? = false,
     var shopDeliveryEnd: Long? = null,
     var orderHistory: ArrayList<OrderDataModel> = ArrayList()
+
 ) : Parcelable

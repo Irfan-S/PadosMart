@@ -14,9 +14,7 @@ import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.repository.ChatRepository
 import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
-import espl.apps.padosmart.utils.ORDER_STATUS_CONFIRMED
-import espl.apps.padosmart.utils.ORDER_STATUS_IN_PROGRESS
-import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
+import espl.apps.padosmart.utils.*
 
 
 class AppViewModel(app: Application) : AndroidViewModel(app) {
@@ -74,6 +72,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<ArrayList<OrderDataModel>>(ArrayList())
     }
 
+    val recentShopsList: MutableLiveData<ArrayList<ShopDataModel>> by lazy {
+        MutableLiveData<ArrayList<ShopDataModel>>(ArrayList())
+    }
+
     //TODO add input limiting
     fun getOrdersList(queryID: String, queryArg: String) {
         Log.d(TAG, "fetching orders")
@@ -103,6 +105,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             })
     }
 
+    fun updateShopCount() {
+        fireStoreRepository.runTransaction(
+            NODE_SHOPS,
+            shopPublicID = selectedShop!!.shopPublicID!!,
+            editNode = QUERY_ARG_SHOP_COUNTER,
+            object : FirestoreRepository.OnFirestoreCallback {
+                override fun onUploadSuccessful(isSuccess: Boolean) {
+                    Log.d(TAG, "Successfully updated counter for shop visits")
+                }
+
+            }
+        )
+    }
+
     fun getOnlineCustomerList(shopID: String) {
         Log.d(TAG, "Fetching live customers")
         fireStoreRepository.fetchOnlineCustomersFromFirestore(shopID, object :
@@ -114,6 +130,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         })
     }
 
+
+    fun fetchRecentShops() {
+        fireStoreRepository.fetchRecentShops(
+
+        )
+    }
 
     fun fetchNewShops() {
 

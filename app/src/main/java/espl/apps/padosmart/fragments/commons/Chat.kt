@@ -345,6 +345,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
         }
     }
 
+    //TODO image features do not work as intended
     fun sendMessage(attachmentURI: Uri?) {
         if (!TextUtils.isEmpty(messageEditText.text) || attachmentURI != null) {
 

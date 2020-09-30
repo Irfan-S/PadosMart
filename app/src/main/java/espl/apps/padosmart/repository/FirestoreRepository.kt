@@ -12,10 +12,7 @@ import com.google.firebase.storage.ktx.storage
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
 import espl.apps.padosmart.models.ShopDataModel
-import espl.apps.padosmart.utils.ORDER_STATUS_NOT_PLACED
-import espl.apps.padosmart.utils.QUERY_ARG_CUSTOMER_ONLINE
-import espl.apps.padosmart.utils.QUERY_ARG_ORDER_STATUS
-import espl.apps.padosmart.utils.QUERY_ARG_SHOP_ID
+import espl.apps.padosmart.utils.*
 
 class FirestoreRepository(private var context: Context) {
 
@@ -71,6 +68,26 @@ class FirestoreRepository(private var context: Context) {
             .document(orderID).addSnapshotListener(listener)
     }
 
+    fun runTransaction(
+        collection: String,
+        shopPublicID: String,
+        editNode: String,
+        onFirestoreCallback: OnFirestoreCallback
+    ) {
+        val doc = fireStoreDB.collection(collection).document(shopPublicID)
+        fireStoreDB.runTransaction { transaction ->
+            val snapshot = transaction.get(doc)
+
+            // Note: this could be done without a transaction
+            //       by updating the population using FieldValue.increment()
+            val newValue = snapshot.getDouble(editNode)!! + 1
+            transaction.update(doc, editNode, newValue)
+            null
+        }.addOnCompleteListener {
+            onFirestoreCallback.onUploadSuccessful(it.isSuccessful)
+        }
+    }
+
 
     fun attachNewChatShopListener(
         shopPublicID: String,
@@ -86,9 +103,10 @@ class FirestoreRepository(private var context: Context) {
     }
 
 
-    fun fetchRecentShops(numOfShops: Long, onShopsFetched: OnShopsFetched) {
+    fun fetchRecentShops(userID: String, numOfShops: Long, onShopsFetched: OnShopsFetched) {
         val resp = ArrayList<ShopDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_shops))
+            .whereEqualTo(QUERY_ARG_USER_ID, userID)
             .orderBy("shopCreationDate", Query.Direction.DESCENDING).limit(numOfShops).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
