@@ -41,7 +41,7 @@ class ShopCurrentOrders : Fragment() {
 
         appViewModel.getCurrentOrdersList(
             QUERY_ARG_SHOP_ID,
-            appViewModel.shopData.shopPublicID!!,
+            appViewModel.shopData.shopID!!,
         )
 
         val currentOrdersAdapter = OrderHistoryAdapter(

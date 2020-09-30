@@ -47,10 +47,15 @@ class UserShopInfo : Fragment() {
 
         shopRatingBar.rating =
             ((appViewModel.selectedShop!!.shopTotalRating!! / appViewModel.selectedShop!!.shopTotalRatingCount!!).toFloat())
-        timingsText.text =
-            " Timings: ${TimeUnit.MILLISECONDS.toHours(appViewModel.selectedShop!!.shopDeliveryStart!!)} to ${
-                TimeUnit.MILLISECONDS.toHours(appViewModel.selectedShop!!.shopDeliveryEnd!!)
-            }"
+        if (appViewModel.selectedShop!!.doesShopDeliver!!) {
+            timingsText.text =
+                " Timings: ${TimeUnit.MILLISECONDS.toHours(appViewModel.selectedShop!!.shopDeliveryStart!!)} to ${
+                    TimeUnit.MILLISECONDS.toHours(appViewModel.selectedShop!!.shopDeliveryEnd!!)
+                }"
+        } else {
+            timingsText.text = "Shop does not provide delivery"
+        }
+
         addressText.text = "Address: ${appViewModel.selectedShop!!.address!!}"
 
 
@@ -64,7 +69,7 @@ class UserShopInfo : Fragment() {
                 shopName = appViewModel.selectedShop!!.shopName!!,
                 deliveryAddress = appViewModel.userData.address,
                 customerID = appViewModel.firebaseUser!!.uid,
-                shopPublicID = appViewModel.selectedShop!!.shopPublicID!!,
+                shopID = appViewModel.selectedShop!!.shopID!!,
                 customerOnline = true,
                 OTP = generateOTP(),
                 orderStatus = ORDER_STATUS_NOT_PLACED

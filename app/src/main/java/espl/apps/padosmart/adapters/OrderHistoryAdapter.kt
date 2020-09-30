@@ -52,7 +52,7 @@ class OrderHistoryAdapter(
 
         private var listenerRef: WeakReference<ButtonListener>? = null
         fun bindItems(order: OrderDataModel) {
-            val name = if (orderType == QUERY_ARG_USER_ID) {
+            val name = if (orderType == QUERY_ARG_CUSTOMER_ID) {
                 order.shopName
             } else {
                 order.customerName

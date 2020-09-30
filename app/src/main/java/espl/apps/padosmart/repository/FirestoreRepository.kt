@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
@@ -43,6 +44,26 @@ class FirestoreRepository(private var context: Context) {
                 onOrderAdded.onSuccess(id, true)
             }.addOnFailureListener {
                 onOrderAdded.onSuccess(id, false)
+            }
+    }
+
+    /**
+     * Fetches all shops in the firestore database
+     */
+    fun fetchShops(onShopsFetched: OnShopsFetched) {
+        fireStoreDB.collection(context.getString(R.string.firestore_shops))
+            .get()
+            .addOnSuccessListener { documents ->
+                Log.d(TAG, "Fetching all shop data")
+                val shopsList: ArrayList<ShopDataModel> = ArrayList()
+                for (document in documents) {
+                    shopsList.add(document.toObject<ShopDataModel>())
+                    Log.d(TAG, shopsList.toString())
+                }
+                Log.d(TAG, "Length: ${shopsList.size}")
+                onShopsFetched.onSuccess(shopsList)
+            }.addOnFailureListener {
+                onShopsFetched.onSuccess(ArrayList())
             }
     }
 
@@ -90,34 +111,89 @@ class FirestoreRepository(private var context: Context) {
 
 
     fun attachNewChatShopListener(
-        shopPublicID: String,
+        shopID: String,
         listener: EventListener<QuerySnapshot>
     ): ListenerRegistration {
-        return fireStoreDB.collection(context.getString(R.string.firestore_orders)).whereEqualTo(
-            QUERY_ARG_SHOP_ID, shopPublicID
-        ).whereEqualTo(
-            QUERY_ARG_CUSTOMER_ONLINE, true
-        )
+        return fireStoreDB.collection(context.getString(R.string.firestore_orders))
+            .whereEqualTo(QUERY_ARG_SHOP_ID, shopID)
+            .whereEqualTo(QUERY_ARG_CUSTOMER_ONLINE, true)
             .whereEqualTo(QUERY_ARG_ORDER_STATUS, ORDER_STATUS_NOT_PLACED)
             .addSnapshotListener(listener)
     }
 
 
     fun fetchRecentShops(userID: String, numOfShops: Long, onShopsFetched: OnShopsFetched) {
-        val resp = ArrayList<ShopDataModel>()
-        fireStoreDB.collection(context.getString(R.string.firestore_shops))
-            .whereEqualTo(QUERY_ARG_USER_ID, userID)
-            .orderBy("shopCreationDate", Query.Direction.DESCENDING).limit(numOfShops).get()
+        var respArray = ArrayList<ShopDataModel>()
+        Log.d(TAG, "Querying recent shops")
+        fireStoreDB.collection(NODE_ORDERS)
+            .whereEqualTo(QUERY_ARG_CUSTOMER_ID, userID)
+            .limit(numOfShops)
+            .get()
+            .addOnSuccessListener { documents ->
+                Log.d(
+                    TAG,
+                    "Fetching recent shops from repo successful w ${documents.toObjects<OrderDataModel>()}"
+                )
+                for (document in documents) {
+                    var resp = document.toObject<OrderDataModel>()
+                    getShopDetails(resp.shopID!!,
+                        object : OnShopFetched {
+                            override fun onSuccess(shopData: ShopDataModel) {
+                                if (!respArray.contains(shopData)) {
+                                    respArray.add(shopData)
+                                }
+                                Log.d(TAG, "Recent shops are $respArray")
+                                onShopsFetched.onSuccess(respArray)
+                            }
+
+                        })
+                }
+            }.addOnFailureListener {
+                Log.d(TAG, "Failed recent fetching w $it")
+                onShopsFetched.onSuccess(respArray)
+            }
+    }
+
+
+    fun fetchPopularShops(userCity: String, onShopsFetched: OnShopsFetched, numOfShops: Long) {
+        var resp = ArrayList<ShopDataModel>()
+        Log.d(TAG, "Querying popular shops")
+        fireStoreDB.collection(NODE_SHOPS)
+            .whereEqualTo(QUERY_ARG_SHOP_STATUS, SHOP_USER)
+            .whereEqualTo(QUERY_ARG_CITY, userCity)
+            .orderBy(QUERY_ARG_SHOP_COUNTER)
+            .limit(numOfShops)
+            .get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
-                    resp.add(document.toObject() as ShopDataModel)
+                    //Removing duplicates
+                    if (!resp.contains(document.toObject())) {
+                        resp.add(document.toObject())
+                    }
+
                 }
+                Log.d(
+                    TAG,
+                    "Fetching popular shops from repo successful w ${documents.toObjects<ShopDataModel>()}"
+                )
+                //resp = documents.toObjects<ShopDataModel>() as ArrayList<ShopDataModel>
                 onShopsFetched.onSuccess(resp)
             }.addOnFailureListener {
+                Log.d(TAG, "Failed popular fetching w $it")
                 onShopsFetched.onSuccess(resp)
             }
     }
 
+    fun getShopDetails(
+        shopID: String,
+        callback: OnShopFetched
+    ) {
+        fireStoreDB.collection(NODE_SHOPS).document(shopID).get().addOnSuccessListener {
+            if (it != null) {
+                callback.onSuccess(it.toObject<ShopDataModel>()!!)
+            }
+        }
+    }
 
     fun updateShopDetails(
         shopPublicID: String,
@@ -129,20 +205,28 @@ class FirestoreRepository(private var context: Context) {
             .update(
                 editNode, value
             ).addOnCompleteListener {
-            onFirestoreCallback.onUploadSuccessful(it.isSuccessful)
-        }
+                onFirestoreCallback.onUploadSuccessful(it.isSuccessful)
+            }
+    }
+
+    fun signOut() {
+        mAuth.signOut()
     }
 
 
     fun fetchQueryOrdersFromFirestore(
-        queryID: String,
+        node: String,
         queryArg: String,
         onOrdersFetched: OnOrdersFetched,
         limit: Long
     ) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
-            .whereEqualTo(queryArg, queryID).limit(limit).get().addOnSuccessListener { documents ->
+            .whereEqualTo(node, queryArg)
+            .limit(limit)
+            .get()
+            .addOnSuccessListener { documents ->
+                Log.d(TAG, "Fetching orders ${documents.toObjects<OrderDataModel>()}")
                 for (document in documents) {
                     resp.add(document.toObject() as OrderDataModel)
                 }
@@ -162,7 +246,8 @@ class FirestoreRepository(private var context: Context) {
     ) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
-            .whereEqualTo(queryID1, queryArg1).whereIn(queryID2, queryArg2).get()
+            .whereEqualTo(queryID1, queryArg1).whereIn(queryID2, queryArg2)
+            .get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
                     resp.add(document.toObject() as OrderDataModel)
@@ -177,7 +262,9 @@ class FirestoreRepository(private var context: Context) {
         val resp = ArrayList<OrderDataModel>()
         fireStoreDB.collection(context.getString(R.string.firestore_orders))
             .whereEqualTo("shopPublicID", shopID)
-            .whereEqualTo("customerOnline", true).get().addOnSuccessListener { documents ->
+            .whereEqualTo("customerOnline", true)
+            .get()
+            .addOnSuccessListener { documents ->
                 for (document in documents) {
                     resp.add(document.toObject() as OrderDataModel)
                 }
@@ -194,7 +281,7 @@ class FirestoreRepository(private var context: Context) {
 
     fun uploadShopDetails(shopDataModel: ShopDataModel, callback: OnFirestoreCallback) {
         fireStoreDB.collection(context.getString(R.string.firestore_shops))
-            .document(shopDataModel.shopPublicID!!).set(shopDataModel)
+            .document(shopDataModel.shopID!!).set(shopDataModel)
             .addOnCompleteListener {
                 callback.onUploadSuccessful(true)
             }.addOnFailureListener {
@@ -223,6 +310,10 @@ class FirestoreRepository(private var context: Context) {
 
     interface OnShopsFetched {
         fun onSuccess(shopList: ArrayList<ShopDataModel>)
+    }
+
+    interface OnShopFetched {
+        fun onSuccess(shopData: ShopDataModel)
     }
 
 }

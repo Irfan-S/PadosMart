@@ -17,7 +17,7 @@ data class OrderDataModel(
     var orderDeliveredTimeInMillis: Long? = null,
     var paymentType: Int? = null,
     var deliveryAddress: String? = null,
-    var shopPublicID: String? = null,
+    var shopID: String? = null,
     var OTP: Int? = null,
     var chats: ArrayList<ChatDataModel>? = ArrayList()
 ) : Parcelable

@@ -45,7 +45,7 @@ class ShopNewOrders : Fragment() {
             ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
 
         appViewModel.getOnlineCustomerList(
-            appViewModel.shopData.shopPublicID!!
+            appViewModel.shopData.shopID!!
         )
 
         val chatListAdapter = ChatListDisplayAdapter(
@@ -76,7 +76,7 @@ class ShopNewOrders : Fragment() {
         val ordersObserver =
             Observer<ArrayList<OrderDataModel>> { it ->
                 run {
-                    Log.d(TAG, "orders updated")
+                    Log.d(TAG, "orders updated with $it")
                     chatListAdapter.updateChatList(it)
                 }
             }
@@ -88,7 +88,6 @@ class ShopNewOrders : Fragment() {
                     Log.d(TAG, "Snapshot received is :$value")
                     val activeOrdersList = ArrayList<OrderDataModel>()
                     for (shop in value!!) {
-                        val orderObj = shop.toObject<OrderDataModel>()
 
                         activeOrdersList.add(shop.toObject<OrderDataModel>())
                     }
@@ -105,7 +104,7 @@ class ShopNewOrders : Fragment() {
 
 
         listenerRegistration = appViewModel.fireStoreRepository.attachNewChatShopListener(
-            appViewModel.shopData.shopPublicID!!,
+            appViewModel.shopData.shopID!!,
             orderListener
         )
 

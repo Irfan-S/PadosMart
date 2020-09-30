@@ -19,12 +19,16 @@ val PAYMENT_TYPE_MOBILE = 2
 
 val NODE_SHOPS = "shops"
 val NODE_ORDERS = "orders"
+val NODE_USERS = "users"
+val NODE_ACCESS_PERMS = "access_permissions"
 
-val QUERY_ARG_USER_ID = "customerID"
-val QUERY_ARG_SHOP_ID = "shopPublicID"
+val QUERY_ARG_CUSTOMER_ID = "customerID"
+val QUERY_ARG_SHOP_ID = "shopID"
 val QUERY_ARG_ORDER_STATUS = "orderStatus"
 val QUERY_ARG_CUSTOMER_ONLINE = "customerOnline"
 val QUERY_ARG_SHOP_COUNTER = "shopVisitCount"
+val QUERY_ARG_CITY = "city"
+val QUERY_ARG_SHOP_STATUS = "shopStatus"
 
 
 val ORDER_STATUS_NOT_PLACED = -1

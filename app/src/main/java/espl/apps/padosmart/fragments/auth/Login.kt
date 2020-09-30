@@ -23,6 +23,7 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.hbb20.CountryCodePicker
 import espl.apps.padosmart.R
 import espl.apps.padosmart.bases.UserBase
+import espl.apps.padosmart.models.AccessDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
@@ -35,6 +36,7 @@ class Login : Fragment(), View.OnClickListener {
 
     val TAG = "SignupShopInfo"
 
+    //App view model declared is not the same as the one shared everywhere else
     lateinit var appViewModel: AppViewModel
 
     // [START declare_auth]
@@ -236,12 +238,15 @@ class Login : Fragment(), View.OnClickListener {
                     appViewModel.authRepository.setFirebaseUser(task.result!!.user!!)
                     appViewModel.authRepository.getFirebaseUserType(object :
                         AuthRepository.AuthDataInterface {
-                        override fun onAuthCallback(response: Long) {
-                            Log.d(TAG, "User data fetched with response: $response")
+                        override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                            Log.d(
+                                TAG,
+                                "User data fetched with response: ${accessDataModel.accessCode}"
+                            )
                             if (task.result!!.user!!.isEmailVerified) {
                                 Log.d(TAG, "Email verified user logging in")
-                                when (response) {
-                                    END_USER.toLong() -> {
+                                when (accessDataModel.accessCode) {
+                                    END_USER -> {
                                         Log.d(TAG, "User type: END_USER")
                                         val intent =
                                             Intent(requireContext(), UserBase::class.java)
@@ -251,8 +256,8 @@ class Login : Fragment(), View.OnClickListener {
                                         )
                                         appViewModel.loadUserData(callback = object :
                                             AuthRepository.AuthDataInterface {
-                                            override fun onAuthCallback(response: Long) {
-                                                if (response == END_USER.toLong()) {
+                                            override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                                                if (accessDataModel.accessCode == END_USER) {
                                                     appViewModel.authRepository.getEndUserDataObject(
                                                         callback = object :
                                                             AuthRepository.UserDataInterface {
@@ -262,6 +267,14 @@ class Login : Fragment(), View.OnClickListener {
 
                                                             override fun onDataFetch(dataModel: UserDataModel) {
                                                                 appViewModel.userData = dataModel
+                                                                intent.putExtra(
+                                                                    "userData",
+                                                                    dataModel
+                                                                )
+                                                                Log.d(
+                                                                    TAG,
+                                                                    "User data loaded :$dataModel"
+                                                                )
                                                                 startActivity(intent)
                                                                 requireActivity().finish()
                                                             }
@@ -273,7 +286,7 @@ class Login : Fragment(), View.OnClickListener {
                                         })
 
                                     }
-                                    SHOP_USER.toLong() -> {
+                                    SHOP_USER -> {
                                         Log.d(TAG, "User type: SHOP_USER")
                                         val intent = Intent(requireContext(), UserBase::class.java)
                                         intent.putExtra(
@@ -282,8 +295,8 @@ class Login : Fragment(), View.OnClickListener {
                                         )
                                         appViewModel.loadShopData(callback = object :
                                             AuthRepository.AuthDataInterface {
-                                            override fun onAuthCallback(response: Long) {
-                                                if (response == SHOP_USER.toLong()) {
+                                            override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                                                if (accessDataModel.accessCode == SHOP_USER) {
                                                     appViewModel.authRepository.fetchShopDataObject(
                                                         object :
                                                             AuthRepository.ShopDataFetch {
@@ -292,6 +305,10 @@ class Login : Fragment(), View.OnClickListener {
                                                             ) {
                                                                 appViewModel.shopData =
                                                                     shopDataModel!!
+                                                                intent.putExtra(
+                                                                    "shopData",
+                                                                    shopDataModel
+                                                                )
                                                                 Log.d(
                                                                     TAG,
                                                                     "Shop data: $shopDataModel"
@@ -306,7 +323,7 @@ class Login : Fragment(), View.OnClickListener {
                                         })
 
                                     }
-                                    SHOP_UNVERIFIED.toLong() -> {
+                                    SHOP_UNVERIFIED -> {
                                         Log.d(TAG, "User type: SHOP unverified")
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
@@ -314,20 +331,16 @@ class Login : Fragment(), View.OnClickListener {
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
-                                    SHOP_INIT_LOGIN.toLong() -> {
+                                    SHOP_INIT_LOGIN -> {
                                         Log.d(TAG, "User type: SHOP initialization")
                                         appViewModel.authRepository.fetchShopDataObject(object :
                                             AuthRepository.ShopDataFetch {
                                             override fun onFetchComplete(shopDataModel: ShopDataModel?) {
                                                 if (shopDataModel != null) {
-                                                    shopDataModel.shopPrivateID =
+                                                    shopDataModel.shopID =
                                                         appViewModel.authRepository.getFirebaseUser()!!.uid
-                                                    val id =
-                                                        appViewModel.fireStoreRepository.fireStoreDB.collection(
-                                                            getString(R.string.firestore_shops)
-                                                        ).document().id
-                                                    shopDataModel.shopPublicID = id
                                                     shopDataModel.isOnline = true
+                                                    shopDataModel.shopStatus = SHOP_USER
                                                     shopDataModel.shopCreationDate =
                                                         appViewModel.getDate()
                                                     appViewModel.fireStoreRepository.uploadShopDetails(
@@ -358,6 +371,12 @@ class Login : Fragment(), View.OnClickListener {
                                                                                         getString(R.string.intent_userType),
                                                                                         SHOP_USER
                                                                                     )
+                                                                                    intent.putExtra(
+                                                                                        "shopData",
+                                                                                        shopDataModel
+                                                                                    )
+                                                                                    appViewModel.shopData =
+                                                                                        shopDataModel
                                                                                     startActivity(
                                                                                         intent
                                                                                     )
@@ -387,22 +406,22 @@ class Login : Fragment(), View.OnClickListener {
                                         })
 
                                     }
-                                    AUTH_ACCESS_FAILED.toLong() -> {
+                                    AUTH_ACCESS_FAILED -> {
                                         Snackbar.make(
                                             requireActivity().findViewById(android.R.id.content),
                                             "Unable to sign you in",
                                             Snackbar.LENGTH_LONG
                                         ).show()
                                     }
-                                    NEW_USER.toLong() -> {
+                                    NEW_USER -> {
                                         Log.d(TAG, "User type: NEW_USER")
                                         appViewModel.userData.phone = phoneNumber
                                         localView.findNavController().navigate(R.id.userSignup)
                                     }
                                 }
                             } else {
-                                when (response) {
-                                    NEW_USER.toLong() -> {
+                                when (accessDataModel.accessCode) {
+                                    NEW_USER -> {
                                         Log.d(TAG, "User type: NEW_USER")
                                         appViewModel.userData.phone = phoneNumber
                                         localView.findNavController().navigate(R.id.userSignup)

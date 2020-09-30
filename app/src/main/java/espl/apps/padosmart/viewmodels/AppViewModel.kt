@@ -5,11 +5,7 @@ import android.location.Address
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import espl.apps.padosmart.models.ChatDataModel
-import espl.apps.padosmart.models.OrderDataModel
-import espl.apps.padosmart.models.ShopDataModel
-import espl.apps.padosmart.models.UserDataModel
-import espl.apps.padosmart.repository.AppRepository
+import espl.apps.padosmart.models.*
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.repository.ChatRepository
 import espl.apps.padosmart.repository.FirestoreRepository
@@ -22,7 +18,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val TAG = "AppViewModel"
 
     val authRepository = AuthRepository(app)
-    val appRepository = AppRepository(app)
     val fireStoreRepository = FirestoreRepository(app)
     val chatRepository = ChatRepository()
 
@@ -30,8 +25,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     var firebaseUser = authRepository.getFirebaseUser()
 
+    var userType: Int? = null
+
+
     var userData: UserDataModel = UserDataModel()
-    var shopData = ShopDataModel()
+    var shopData: ShopDataModel = ShopDataModel()
 
     var selectedShop: ShopDataModel? = null
 
@@ -76,10 +74,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<ArrayList<ShopDataModel>>(ArrayList())
     }
 
+    val popularShopsList: MutableLiveData<ArrayList<ShopDataModel>> by lazy {
+        MutableLiveData<ArrayList<ShopDataModel>>(ArrayList())
+    }
+
     //TODO add input limiting
-    fun getOrdersList(queryID: String, queryArg: String) {
+    fun getOrdersList(node: String, queryArg: String) {
         Log.d(TAG, "fetching orders")
-        fireStoreRepository.fetchQueryOrdersFromFirestore(queryID, queryArg, object :
+        fireStoreRepository.fetchQueryOrdersFromFirestore(node, queryArg, object :
             FirestoreRepository.OnOrdersFetched {
             override fun onSuccess(orderList: ArrayList<OrderDataModel>) {
                 Log.d(TAG, "Order list: $orderList")
@@ -108,7 +110,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun updateShopCount() {
         fireStoreRepository.runTransaction(
             NODE_SHOPS,
-            shopPublicID = selectedShop!!.shopPublicID!!,
+            shopPublicID = selectedShop!!.shopID!!,
             editNode = QUERY_ARG_SHOP_COUNTER,
             object : FirestoreRepository.OnFirestoreCallback {
                 override fun onUploadSuccessful(isSuccess: Boolean) {
@@ -130,16 +132,48 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         })
     }
 
+    fun signOut() {
+        authRepository.signOut()
+        fireStoreRepository.signOut()
+    }
+
 
     fun fetchRecentShops() {
+        Log.d(TAG, "Fetching recent shops")
         fireStoreRepository.fetchRecentShops(
+            userID = authRepository.getFirebaseUser()!!.uid,
+            onShopsFetched = object : FirestoreRepository.OnShopsFetched {
+                override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
+                    Log.d(TAG, "recent shops: $shopList")
+                    recentShopsList.value = shopList
+                }
 
+            },
+            numOfShops = 20
         )
     }
 
-    fun fetchNewShops() {
+    fun fetchPopularShops() {
+        Log.d(TAG, "Fetching popular shops")
+        fireStoreRepository.fetchPopularShops(
+            userData.city!!,
+            onShopsFetched = object : FirestoreRepository.OnShopsFetched {
+                override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
+                    Log.d(TAG, "popular shops: $shopList")
+                    popularShopsList.value = shopList
+                }
 
+            },
+            numOfShops = 20
+        )
     }
 
+    init {
+        authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
+            override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                userType = accessDataModel.accessCode
+            }
+        })
+    }
 
 }

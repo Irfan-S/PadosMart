@@ -5,7 +5,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
 import espl.apps.padosmart.adapters.ShopDisplayAdapter
 import espl.apps.padosmart.models.ShopDataModel
-import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.viewmodels.AppViewModel
 
 
@@ -26,55 +27,111 @@ class UserHome : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val appViewModel: AppViewModel =
+            ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
+
 
         val view =
             inflater.inflate(R.layout.fragment_home_user, container, false) as View
-        val horizontalLayout = LinearLayoutManager(
+        val recentShopsHorizontalLayout = LinearLayoutManager(
+            requireActivity(),
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
+        val popularShopsHorizontalLayout = LinearLayoutManager(
             requireActivity(),
             LinearLayoutManager.HORIZONTAL,
             false
         )
 
-        val appViewModel: AppViewModel =
-            ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
-        val recentStoresRecyclerView: RecyclerView =
+
+        val recentShopsLayout: LinearLayout = view.findViewById(R.id.recentShopsLayout)
+        val popularShopsLayout: LinearLayout = view.findViewById(R.id.popularShopsLayout)
+
+
+        val recentShopsRecyclerView: RecyclerView =
             view.findViewById(R.id.recentsShopsRecyclerView)
+        val popularShopsRecyclerView: RecyclerView =
+            view.findViewById(R.id.popularShopsRecyclerView)
 
-        recentStoresRecyclerView.layoutManager = horizontalLayout
+        appViewModel.fetchRecentShops()
+        appViewModel.fetchPopularShops()
 
-        appViewModel.appRepository.fetchShops(object : FirestoreRepository.OnShopsFetched {
-            override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
-                Log.d(TAG, "Length: ${shopList.size}")
-                appViewModel.recentShopsList.value = shopList
-                val adapter =
-                    ShopDisplayAdapter(appViewModel.recentShopsList.value!!, object :
-                        ShopDisplayAdapter.ButtonListener {
-                        override fun onButtonClick(position: Int) {
-                            Log.d(TAG, "Position is $position")
-                            //TODO open new chat window with selected shop
-                            Log.d(
-                                TAG,
-                                "Option selected is ${appViewModel.recentShopsList.value!![position].shopPublicID}"
-                            )
+        recentShopsRecyclerView.layoutManager = recentShopsHorizontalLayout
+        popularShopsRecyclerView.layoutManager = popularShopsHorizontalLayout
 
+        val recentShopsAdapter =
+            ShopDisplayAdapter(
+                appViewModel.recentShopsList.value!!,
+                object :
+                    ShopDisplayAdapter.ButtonListener {
+                    override fun onButtonClick(position: Int) {
+                        Log.d(TAG, "Position is $position")
+                        Log.d(
+                            TAG,
+                            "Option selected is ${appViewModel.recentShopsList.value!![position].shopID}"
+                        )
+                        appViewModel.selectedShop =
+                            appViewModel.recentShopsList.value!![position]
 
-                            appViewModel.selectedShop =
-                                appViewModel.recentShopsList.value!![position]
+                        view.findNavController()
+                            .navigate(R.id.action_homeFragmentUser_to_userShopInfo)
 
-                            view.findNavController()
-                                .navigate(R.id.action_homeFragmentUser_to_userShopInfo)
+                    }
+                })
 
-//                    findNavController().navigate(action)
-                        }
-                    })
-                recentStoresRecyclerView.adapter = adapter
+        val popularShopsAdapter =
+            ShopDisplayAdapter(
+                appViewModel.popularShopsList.value!!,
+                object :
+                    ShopDisplayAdapter.ButtonListener {
+                    override fun onButtonClick(position: Int) {
+                        Log.d(TAG, "Position is $position")
+                        Log.d(
+                            TAG,
+                            "Option selected is ${appViewModel.popularShopsList.value!![position].shopID}"
+                        )
+                        appViewModel.selectedShop =
+                            appViewModel.popularShopsList.value!![position]
+
+                        view.findNavController()
+                            .navigate(R.id.action_homeFragmentUser_to_userShopInfo)
+
+                    }
+                }
+            )
+
+        val recentShopsObserver = Observer<ArrayList<ShopDataModel>> { shopList ->
+            run {
+                Log.d(TAG, "recent shops added :$shopList")
+                recentShopsAdapter.updateChats(shopList)
+//                if(shopList.isEmpty()){
+//                    recentShopsLayout.visibility = View.GONE
+//                }
+//                else{
+//                    recentShopsLayout.visibility = View.VISIBLE
+//                }
             }
-        })
+        }
+        val popularShopsObserver = Observer<ArrayList<ShopDataModel>> { shopList ->
+            run {
+                Log.d(TAG, "popular shops added :$shopList")
+                popularShopsAdapter.updateChats(shopList)
+//                if(shopList.isEmpty()){
+//                    popularShopsLayout.visibility = View.GONE
+//                }else{
+//                    popularShopsLayout.visibility = View.VISIBLE
+//                }
+            }
+        }
+
+        appViewModel.recentShopsList.observe(viewLifecycleOwner, recentShopsObserver)
+        appViewModel.popularShopsList.observe(viewLifecycleOwner, popularShopsObserver)
 
 
 
-
-
+        recentShopsRecyclerView.adapter = recentShopsAdapter
+        popularShopsRecyclerView.adapter = popularShopsAdapter
 
         return view
     }

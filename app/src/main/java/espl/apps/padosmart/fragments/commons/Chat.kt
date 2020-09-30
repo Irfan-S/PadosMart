@@ -98,7 +98,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
 
 
 
-        if (appViewModel.appRepository.userType == END_USER) {
+        if (appViewModel.userType == END_USER) {
             //Shop passed in when tile selected, so cannot be null
             chatAdapter =
                 ChatAdapter(appViewModel.selectedOrder!!.customerName!!, appViewModel.chats.value!!)
@@ -234,7 +234,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
 
     private fun detachListenersAndSendOfflineMessage() {
         listenerRegistration?.remove()
-        if (appViewModel.appRepository.userType == END_USER) {
+        if (appViewModel.userType == END_USER) {
             appViewModel.fireStoreRepository.updateOrderDetails(
                 appViewModel.orderID!!,
                 "customerOnline",
@@ -315,7 +315,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
     }
 
     fun showMenuOptions(orderStatus: Int) {
-        when (appViewModel.appRepository.userType) {
+        when (appViewModel.userType) {
             END_USER -> {
                 when (orderStatus) {
                     ORDER_STATUS_NOT_PLACED -> {
@@ -350,7 +350,7 @@ class Chat : Fragment(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
         if (!TextUtils.isEmpty(messageEditText.text) || attachmentURI != null) {
 
             val newMessage = ChatDataModel(
-                senderName = if (appViewModel.appRepository.userType == END_USER) appViewModel.selectedOrder!!.customerName else appViewModel.selectedOrder!!.shopName,
+                senderName = if (appViewModel.userType == END_USER) appViewModel.selectedOrder!!.customerName else appViewModel.selectedOrder!!.shopName,
                 message = if (messageEditText.text != null) messageEditText.text.toString() else "Image attached",
                 time = System.currentTimeMillis(),
                 attachmentURI = attachmentURI.toString(),

@@ -19,7 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import espl.apps.padosmart.R
-import espl.apps.padosmart.bases.UserBase
+import espl.apps.padosmart.bases.LoginBase
 import espl.apps.padosmart.utils.GENDER_FEMALE
 import espl.apps.padosmart.utils.GENDER_MALE
 import espl.apps.padosmart.utils.GENDER_OTHERS
@@ -147,11 +147,11 @@ class ShopDetails : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChange
         when (v!!.id) {
             R.id.locationButton -> {
                 appViewModel.locationService!!.checkGpsStatus()
-                if ((activity as UserBase).foregroundPermissionApproved()) {
+                if ((activity as LoginBase).foregroundPermissionApproved()) {
                     appViewModel.locationService?.subscribeToLocationUpdates()
                         ?: Log.d(TAG, "Service Not Bound")
                 } else {
-                    (activity as UserBase).requestForegroundPermissions()
+                    (activity as LoginBase).requestForegroundPermissions()
                 }
 
             }

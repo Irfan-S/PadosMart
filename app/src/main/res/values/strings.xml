@@ -1,9 +1,6 @@
 <resources>
     <string name="app_name">PadosMart</string>
     <string name="userDataParcel">userDataParcel</string>
-    <string name="firebase_user_data_node">user_data_node</string>
-    <string name="firebase_access_permission_node">access_permission_node</string>
-    <string name="firebase_shop_data_node">shop_data_node</string>
     <string name="city_prompt">City</string>
     <string name="state_prompt">State</string>
     <string name="country_prompt">Country</string>

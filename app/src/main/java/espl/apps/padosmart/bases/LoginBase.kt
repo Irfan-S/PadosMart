@@ -9,33 +9,25 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.BuildConfig
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
-import espl.apps.padosmart.repository.FirestoreRepository
 import espl.apps.padosmart.services.LocationService
 import espl.apps.padosmart.utils.*
 import espl.apps.padosmart.viewmodels.AppViewModel
 
-class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnClickListener {
+class LoginBase : AppCompatActivity() {
 
-    private val TAG = "UserBase"
+    private val TAG = "LoginBase"
+
+
+    lateinit var appViewModel: AppViewModel
 
     private var foregroundOnlyLocationServiceBound = false
 
@@ -43,144 +35,35 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
     // Listens for location broadcasts from ForegroundOnlyLocationService.
     private lateinit var locationBroadcastReceiver: LocationBroadcastReceiver
 
-    lateinit var appViewModel: AppViewModel
-
-    lateinit var navController: NavController
-
-    lateinit var toolbar: MaterialToolbar
-
-    var respShop: ShopDataModel? = null
-    var respUser: UserDataModel? = null
-
-    var profileNavDirections: Int = 0
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        respShop = intent.getParcelableExtra<ShopDataModel>("shopData")
-        respUser = intent.getParcelableExtra<UserDataModel>("userData")
+        val respShop = intent.getParcelableExtra<ShopDataModel>("shopData")
+        val respUser = intent.getParcelableExtra<UserDataModel>("userData")
 
         appViewModel = ViewModelProvider(this).get(AppViewModel::class.java)
 
-
-        if (respUser != null) {
-            appViewModel.userData = respUser as UserDataModel
-        } else if (respShop != null) {
-            appViewModel.shopData = respShop as ShopDataModel
-            shopStatusSet(status = true)
-        }
-        Log.d(TAG, "User resp: $respUser , shop resp: $respShop")
-
         locationBroadcastReceiver = LocationBroadcastReceiver()
+        setContentView(R.layout.base_auth)
 
         when (intent.getIntExtra(getString(R.string.intent_userType), AUTH_ACCESS_FAILED)) {
             END_USER -> {
-                setContentView(R.layout.base_user_activity)
-                Log.d(TAG, "in end user base")
-                profileNavDirections = R.id.profileFragmentUser
-
-                toolbar = findViewById<MaterialToolbar>(R.id.userHomeAppBar)
-                toolbar.setNavigationOnClickListener(this)
-                toolbar.setOnMenuItemClickListener(this)
-
-                val host: NavHostFragment = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment) as NavHostFragment? ?: return
-
-                navController = host.navController
-                navController.addOnDestinationChangedListener { _, nd: NavDestination, _ ->
-                    if (nd.id == R.id.profileFragmentUser || nd.id == R.id.userChat) {
-                        toolbar.visibility = View.GONE
-                    } else {
-                        toolbar.visibility = View.VISIBLE
-                    }
-                }
-
-                setupBottomNavMenu(navController)
+                val locIntent = Intent(this, UserBase::class.java)
+                locIntent.putExtra("userData", respUser)
+                startActivity(locIntent)
+                finish()
             }
             SHOP_USER -> {
-                setContentView(R.layout.base_shop_activity)
-                Log.d(TAG, "in shop base")
-
-                toolbar = findViewById<MaterialToolbar>(R.id.shopHomeAppBar)
-                toolbar.setNavigationOnClickListener(this)
-                toolbar.setOnMenuItemClickListener(this)
-                toolbar.title = respShop!!.shopName
-
-                profileNavDirections = R.id.shopProfile
-
-                val host: NavHostFragment = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment) as NavHostFragment? ?: return
-
-                navController = host.navController
-                navController.addOnDestinationChangedListener { _, nd: NavDestination, _ ->
-                    if (nd.id == R.id.shopProfile || nd.id == R.id.shopChat) {
-                        toolbar.visibility = View.GONE
-                    } else {
-                        toolbar.visibility = View.VISIBLE
-                    }
-                }
-
-                shopStatusSet(status = true)
-
-                setupBottomNavMenu(navController)
+                val locIntent = Intent(this, UserBase::class.java)
+                locIntent.putExtra("shopData", respShop)
+                startActivity(locIntent)
+                finish()
             }
             AUTH_ACCESS_FAILED -> {
-                setContentView(R.layout.base_auth)
+                Log.d(TAG, "In nav base")
             }
         }
-
-    }
-
-    private fun setupBottomNavMenu(navController: NavController) {
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        bottomNav?.setupWithNavController(navController)
-    }
-
-
-    override fun onMenuItemClick(item: MenuItem?): Boolean {
-        when (item!!.itemId) {
-
-            R.id.search -> {
-                val searchView: SearchView = item as SearchView
-                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean {
-                        searchView.clearFocus()
-                        /*   if(list.contains(query)){
-                    adapter.getFilter().filter(query);
-                }else{
-                    Toast.makeText(MainActivity.this, "No Match found",Toast.LENGTH_LONG).show();
-                }*/     return false
-                    }
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        Log.d(TAG, "Entering text in searchbar")
-                        //adapter.getFilter().filter(newText)
-                        return false
-                    }
-                })
-                return true
-            }
-            else -> return false
-        }
-    }
-
-    override fun onClick(v: View?) {
-        when (v!!.id) {
-            R.id.userHomeAppBar -> {
-                Log.d(TAG, "Navigation on click clicked")
-                navController.navigate(R.id.profileFragmentUser, null)
-            }
-            R.id.shopHomeAppBar -> {
-                Log.d(TAG, "Navigation on click clicked")
-                navController.navigate(R.id.shopProfile, null)
-            }
-            else -> {
-                Log.d(TAG, "Navigation on click clicked")
-                navController.navigate(profileNavDirections, null)
-            }
-        }
-
 
     }
 
@@ -206,17 +89,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
         super.onStart()
         val serviceIntent = Intent(this, LocationService::class.java)
         bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
-        Log.d(TAG, "onStart called with respUser $respUser")
-        Log.d(
-            TAG,
-            "App user data stored : ${appViewModel.userData} ,shop: ${appViewModel.shopData}"
-        )
-        if (respUser != null) {
-            appViewModel.userData = respUser as UserDataModel
-        } else if (respShop != null) {
-            appViewModel.shopData = respShop as ShopDataModel
-            shopStatusSet(status = true)
-        }
 
     }
 
@@ -243,11 +115,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             foregroundOnlyLocationServiceBound = false
 
         }
-
-        if (respShop != null) {
-            shopStatusSet(status = false)
-        }
-
         super.onStop()
     }
 
@@ -266,7 +133,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
 
     fun requestForegroundPermissions() {
         val provideRationale = foregroundPermissionApproved()
-
         // If the user denied a previous request, but didn't check "Don't ask again", provide
         // additional rationale.
         if (provideRationale) {
@@ -296,18 +162,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
         }
     }
 
-    fun shopStatusSet(status: Boolean) {
-        appViewModel.fireStoreRepository.updateShopDetails(
-            appViewModel.shopData.shopID!!,
-            "isOnline",
-            status,
-            object : FirestoreRepository.OnFirestoreCallback {
-                override fun onUploadSuccessful(isSuccess: Boolean) {
-                    Log.d(TAG, "Shop status updated")
-                }
-
-            })
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -375,4 +229,6 @@ class UserBase : AppCompatActivity(), Toolbar.OnMenuItemClickListener, View.OnCl
             }
         }
     }
+
+
 }

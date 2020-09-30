@@ -1,6 +1,7 @@
 package espl.apps.padosmart.models
 
 import android.os.Parcelable
+import espl.apps.padosmart.utils.SHOP_UNVERIFIED
 import kotlinx.android.parcel.Parcelize
 
 //TODO Web admin needs to add in date to object before initialization.
@@ -24,8 +25,8 @@ data class ShopDataModel(
     var isOnline: Boolean = false,
     var shopCreationDate: Long? = null,
     var shopVisitCount: Long? = 0,
-    var shopPrivateID: String? = null,
-    var shopPublicID: String? = null,
+    var shopID: String? = null,
+    var shopStatus: Int = SHOP_UNVERIFIED,
     var shopImageURL: String? = null,
     var shopVerificationImageURL: String? = null,
     var shopDeliveryStart: Long? = null,

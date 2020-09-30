@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
 import espl.apps.padosmart.adapters.OrderHistoryAdapter
 import espl.apps.padosmart.models.OrderDataModel
-import espl.apps.padosmart.utils.QUERY_ARG_USER_ID
+import espl.apps.padosmart.utils.QUERY_ARG_CUSTOMER_ID
 import espl.apps.padosmart.viewmodels.AppViewModel
 
 class UserOrders : Fragment() {
@@ -37,8 +37,8 @@ class UserOrders : Fragment() {
             ViewModelProvider(requireActivity()).get(AppViewModel::class.java)
 
         appViewModel.getOrdersList(
-            appViewModel.authRepository.getFirebaseUser()!!.uid,
-            QUERY_ARG_USER_ID
+            QUERY_ARG_CUSTOMER_ID,
+            appViewModel.firebaseUser!!.uid
         )
         val exerciseRecyclerView: RecyclerView = view.findViewById(R.id.ordersRecyclerView)
         exerciseRecyclerView.layoutManager = linearLayoutManager
@@ -48,7 +48,7 @@ class UserOrders : Fragment() {
                     Log.d(TAG, "Setting adapters")
                     val adapter =
                         OrderHistoryAdapter(
-                            QUERY_ARG_USER_ID,
+                            QUERY_ARG_CUSTOMER_ID,
                             orderList = appViewModel.ordersList.value!!,
                             object :
                                 OrderHistoryAdapter.ButtonListener {

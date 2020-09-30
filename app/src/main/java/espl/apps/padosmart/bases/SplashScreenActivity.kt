@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
+import espl.apps.padosmart.models.AccessDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
@@ -26,7 +27,7 @@ class SplashScreenActivity : AppCompatActivity() {
 //        Firebase.database.setPersistenceEnabled(true)
         val authRepository = AuthRepository(applicationContext)
 
-        intentLogin = Intent(applicationContext, UserBase::class.java)
+        intentLogin = Intent(applicationContext, LoginBase::class.java)
         intentLogin!!.putExtra(getString(R.string.intent_userType), AUTH_ACCESS_FAILED)
         val currentUser = authRepository.getFirebaseUser()
         val countDownTimer: CountDownTimer = object : CountDownTimer(1000, 1000) {
@@ -48,10 +49,10 @@ class SplashScreenActivity : AppCompatActivity() {
         if (currentUser != null) {
             if (currentUser.isEmailVerified) {
                 authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
-                    override fun onAuthCallback(response: Long) {
-                        Log.d(TAG, "User data fetched with response: $response")
-                        when (response) {
-                            END_USER.toLong() -> {
+                    override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                        Log.d(TAG, "User data fetched with response: ${accessDataModel.accessCode}")
+                        when (accessDataModel.accessCode) {
+                            END_USER -> {
                                 Log.d(TAG, "User type: END_USER")
                                 intent =
                                     Intent(
@@ -76,7 +77,7 @@ class SplashScreenActivity : AppCompatActivity() {
 
                                 })
                             }
-                            SHOP_USER.toLong() -> {
+                            SHOP_USER -> {
                                 Log.d(TAG, "User type: SHOP_USER")
                                 intent = Intent(applicationContext, UserBase::class.java)
                                 intent.putExtra(
@@ -93,7 +94,7 @@ class SplashScreenActivity : AppCompatActivity() {
                                     }
                                 })
                             }
-                            AUTH_ACCESS_FAILED.toLong() -> {
+                            AUTH_ACCESS_FAILED -> {
                                 Snackbar.make(
                                     findViewById(android.R.id.content), "Unable to sign you in",
                                     Snackbar.LENGTH_LONG
