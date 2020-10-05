@@ -27,6 +27,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     var userType: Int? = null
 
+    var appVersion: AppVersionDataModel = getLocalAppVersion(app)
 
     var userData: UserDataModel = UserDataModel()
     var shopData: ShopDataModel = ShopDataModel()
@@ -78,6 +79,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         MutableLiveData<ArrayList<ShopDataModel>>(ArrayList())
     }
 
+    val newShopsList: MutableLiveData<ArrayList<ShopDataModel>> by lazy {
+        MutableLiveData<ArrayList<ShopDataModel>>(ArrayList())
+    }
+
+
     //TODO add input limiting
     fun getOrdersList(node: String, queryArg: String) {
         Log.d(TAG, "fetching orders")
@@ -87,7 +93,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 Log.d(TAG, "Order list: $orderList")
                 ordersList.value = orderList
             }
-        }, limit = 10)
+        }, limit = 20)
     }
 
 
@@ -161,6 +167,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
                     Log.d(TAG, "popular shops: $shopList")
                     popularShopsList.value = shopList
+                }
+
+            },
+            numOfShops = 20
+        )
+    }
+
+    fun fetchNewShops() {
+        Log.d(TAG, "Fetching new shops")
+        fireStoreRepository.fetchNewShops(
+            userData.city!!,
+            onShopsFetched = object : FirestoreRepository.OnShopsFetched {
+                override fun onSuccess(shopList: ArrayList<ShopDataModel>) {
+                    Log.d(TAG, "popular shops: $shopList")
+                    newShopsList.value = shopList
                 }
 
             },

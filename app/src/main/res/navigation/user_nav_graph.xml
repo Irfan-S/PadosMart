@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_homeFragmentUser_to_userShopInfo"
             app:destination="@id/userShopInfo" />
+        <action
+            android:id="@+id/action_homeFragmentUser_to_profileFragmentUser"
+            app:destination="@id/profileFragmentUser" />
     </fragment>
     <fragment
         android:id="@+id/ordersFragmentUser"

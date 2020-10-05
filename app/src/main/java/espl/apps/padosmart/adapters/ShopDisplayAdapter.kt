@@ -5,9 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -19,9 +17,11 @@ class ShopDisplayAdapter(
     private var shopList: ArrayList<ShopDataModel>,
     private val buttonListener: ButtonListener
 ) :
-    RecyclerView.Adapter<ShopDisplayAdapter.ShopHolder>() {
+    RecyclerView.Adapter<ShopDisplayAdapter.ShopHolder>(), Filterable {
 
     private val TAG = "ShopAdapter"
+
+    var shopFilterList = ArrayList<ShopDataModel>()
 
     lateinit var context: Context
 
@@ -36,18 +36,56 @@ class ShopDisplayAdapter(
     }
 
     override fun getItemCount(): Int {
-        Log.d(TAG, "Fetch size : ${shopList.size}")
-        return shopList.size
+        Log.d(TAG, "Fetch size : ${shopFilterList.size}")
+        return shopFilterList.size
     }
 
     override fun onBindViewHolder(holder: ShopHolder, position: Int) {
         Log.d(TAG, "Binding")
-        holder.bindItems(shopList[position])
+        holder.bindItems(shopFilterList[position])
+    }
+
+    fun getItem(position: Int): ShopDataModel {
+        return shopFilterList[position]
     }
 
     fun updateChats(shopList: java.util.ArrayList<ShopDataModel>) {
         this.shopList = shopList
+        shopFilterList = shopList
         notifyDataSetChanged()
+    }
+
+    override fun getFilter(): Filter? {
+        Log.d(TAG, "Filtering text")
+        return object : Filter() {
+            override fun performFiltering(charSequence: CharSequence): FilterResults {
+                val charString = charSequence.toString()
+                if (charString.isEmpty()) {
+                    shopFilterList = shopList
+                } else {
+                    val filteredList: ArrayList<ShopDataModel> = ArrayList()
+                    for (shop in shopList) {
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or UID match
+                        if (shop.shopName?.toLowerCase()
+                            !!.contains(charString.toLowerCase()) || shop.address?.toLowerCase()
+                            !!.contains(charString.toLowerCase())
+                        ) {
+                            filteredList.add(shop)
+                        }
+                    }
+                    shopFilterList = filteredList
+                }
+                val filterResults = FilterResults()
+                filterResults.values = shopFilterList
+                return filterResults
+            }
+
+            override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
+                shopFilterList = filterResults.values as ArrayList<ShopDataModel>
+                notifyDataSetChanged()
+            }
+        }
     }
 
     /**
@@ -87,6 +125,10 @@ class ShopDisplayAdapter(
 
     interface ButtonListener {
         fun onButtonClick(position: Int)
+    }
+
+    init {
+        shopFilterList = shopList
     }
 
 

@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_shopNewOrders_to_shopChat"
             app:destination="@id/shopChat" />
+        <action
+            android:id="@+id/action_shopNewOrders_to_shopProfile"
+            app:destination="@id/shopProfile" />
     </fragment>
     <fragment
         android:id="@+id/shopCurrentOrders"
@@ -22,6 +25,9 @@
         <action
             android:id="@+id/action_shopCurrentOrders_to_shopOrder"
             app:destination="@id/shopOrder" />
+        <action
+            android:id="@+id/action_shopCurrentOrders_to_shopProfile"
+            app:destination="@id/shopProfile" />
     </fragment>
     <fragment
         android:id="@+id/shopOldOrders"

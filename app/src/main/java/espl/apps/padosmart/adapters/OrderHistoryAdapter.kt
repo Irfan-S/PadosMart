@@ -1,11 +1,10 @@
 package espl.apps.padosmart.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.OrderDataModel
@@ -17,8 +16,10 @@ class OrderHistoryAdapter(
     private var orderList: ArrayList<OrderDataModel>,
     private val buttonListener: ButtonListener
 ) :
-    RecyclerView.Adapter<OrderHistoryAdapter.OrderHolder>() {
+    RecyclerView.Adapter<OrderHistoryAdapter.OrderHolder>(), Filterable {
 
+    private val TAG = "OrderHistoryAdapter"
+    var orderListFiltered = ArrayList<OrderDataModel>()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -30,16 +31,20 @@ class OrderHistoryAdapter(
     }
 
     override fun getItemCount(): Int {
-        return orderList.size
+        return orderListFiltered.size
     }
 
     override fun onBindViewHolder(holder: OrderHolder, position: Int) {
-        holder.bindItems(orderList[position])
+        holder.bindItems(orderListFiltered[position])
     }
 
+    fun getItem(position: Int): OrderDataModel {
+        return orderListFiltered[position]
+    }
 
     fun updateOrders(orderList: ArrayList<OrderDataModel>) {
         this.orderList = orderList
+        orderListFiltered = orderList
         notifyDataSetChanged()
     }
 
@@ -90,6 +95,44 @@ class OrderHistoryAdapter(
 
     interface ButtonListener {
         fun onButtonClick(position: Int)
+    }
+
+    override fun getFilter(): Filter? {
+        Log.d(TAG, "Filtering text")
+        return object : Filter() {
+            override fun performFiltering(charSequence: CharSequence): FilterResults {
+                val charString = charSequence.toString()
+                if (charString.isEmpty()) {
+                    orderListFiltered = orderList
+                } else {
+                    val filteredList: ArrayList<OrderDataModel> = ArrayList()
+                    for (order in orderList) {
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or UID match
+                        if (order.shopName?.toLowerCase()
+                            !!
+                                .contains(charString.toLowerCase()) || order.customerName?.toLowerCase()
+                            !!.contains(charString.toLowerCase())
+                        ) {
+                            filteredList.add(order)
+                        }
+                    }
+                    orderListFiltered = filteredList
+                }
+                val filterResults = FilterResults()
+                filterResults.values = orderListFiltered
+                return filterResults
+            }
+
+            override fun publishResults(charSequence: CharSequence, filterResults: FilterResults) {
+                orderListFiltered = filterResults.values as ArrayList<OrderDataModel>
+                notifyDataSetChanged()
+            }
+        }
+    }
+
+    init {
+        orderListFiltered = orderList
     }
 
 

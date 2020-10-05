@@ -8,12 +8,14 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.AccessDataModel
+import espl.apps.padosmart.models.AppVersionDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.repository.AuthRepository
 import espl.apps.padosmart.utils.AUTH_ACCESS_FAILED
 import espl.apps.padosmart.utils.END_USER
 import espl.apps.padosmart.utils.SHOP_USER
+import espl.apps.padosmart.utils.getLocalAppVersion
 
 class SplashScreenActivity : AppCompatActivity() {
 
@@ -48,66 +50,97 @@ class SplashScreenActivity : AppCompatActivity() {
 
         if (currentUser != null) {
             if (currentUser.isEmailVerified) {
-                authRepository.getFirebaseUserType(object : AuthRepository.AuthDataInterface {
-                    override fun onAuthCallback(accessDataModel: AccessDataModel) {
-                        Log.d(TAG, "User data fetched with response: ${accessDataModel.accessCode}")
-                        when (accessDataModel.accessCode) {
-                            END_USER -> {
-                                Log.d(TAG, "User type: END_USER")
-                                intent =
-                                    Intent(
-                                        applicationContext,
-                                        UserBase::class.java
-                                    )
-                                intent.putExtra(
-                                    getString(R.string.intent_userType),
-                                    END_USER
+                authRepository.getAppVersion(object : AuthRepository.AppVersionCallback {
+                    override fun onVersionGet(appVersionDataModel: AppVersionDataModel) {
+                        if (appVersionDataModel.version_string == null) {
+                            Snackbar.make(
+                                findViewById(android.R.id.content), "Unable to sign you in",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        } else {
+                            if (appVersionDataModel.version_string.equals(
+                                    getLocalAppVersion(
+                                        application
+                                    ).version_string
                                 )
-                                authRepository.getEndUserDataObject(callback = object :
-                                    AuthRepository.UserDataInterface {
-                                    override fun onUploadCallback(success: Boolean) {
-                                        //Nothing
-                                    }
+                            ) {
+                                authRepository.getFirebaseUserType(object :
+                                    AuthRepository.AuthDataInterface {
+                                    override fun onAuthCallback(accessDataModel: AccessDataModel) {
+                                        Log.d(
+                                            TAG,
+                                            "User data fetched with response: ${accessDataModel.accessCode}"
+                                        )
+                                        when (accessDataModel.accessCode) {
+                                            END_USER -> {
+                                                Log.d(TAG, "User type: END_USER")
+                                                intent =
+                                                    Intent(
+                                                        applicationContext,
+                                                        UserBase::class.java
+                                                    )
+                                                intent.putExtra(
+                                                    getString(R.string.intent_userType),
+                                                    END_USER
+                                                )
+                                                authRepository.getEndUserDataObject(callback = object :
+                                                    AuthRepository.UserDataInterface {
+                                                    override fun onUploadCallback(success: Boolean) {
+                                                        //Nothing
+                                                    }
 
-                                    override fun onDataFetch(dataModel: UserDataModel) {
-                                        intent.putExtra("userData", dataModel)
-                                        startActivity(intent)
-                                        finish()
+                                                    override fun onDataFetch(dataModel: UserDataModel) {
+                                                        intent.putExtra("userData", dataModel)
+                                                        startActivity(intent)
+                                                        finish()
+                                                    }
+
+                                                })
+                                            }
+                                            SHOP_USER -> {
+                                                Log.d(TAG, "User type: SHOP_USER")
+                                                intent =
+                                                    Intent(applicationContext, UserBase::class.java)
+                                                intent.putExtra(
+                                                    getString(R.string.intent_userType),
+                                                    SHOP_USER
+                                                )
+                                                authRepository.fetchShopDataObject(object :
+                                                    AuthRepository.ShopDataFetch {
+                                                    override fun onFetchComplete(shopDataModel: ShopDataModel?) {
+                                                        intent.putExtra("shopData", shopDataModel)
+                                                        Log.d(TAG, "Shop data: $shopDataModel")
+                                                        startActivity(intent)
+                                                        finish()
+                                                    }
+                                                })
+                                            }
+                                            AUTH_ACCESS_FAILED -> {
+                                                Snackbar.make(
+                                                    findViewById(android.R.id.content),
+                                                    "Unable to sign you in",
+                                                    Snackbar.LENGTH_LONG
+                                                ).show()
+                                            }
+                                            else -> {
+                                                countDownTimer.start()
+                                            }
+                                        }
+
                                     }
 
                                 })
-                            }
-                            SHOP_USER -> {
-                                Log.d(TAG, "User type: SHOP_USER")
-                                intent = Intent(applicationContext, UserBase::class.java)
-                                intent.putExtra(
-                                    getString(R.string.intent_userType),
-                                    SHOP_USER
-                                )
-                                authRepository.fetchShopDataObject(object :
-                                    AuthRepository.ShopDataFetch {
-                                    override fun onFetchComplete(shopDataModel: ShopDataModel?) {
-                                        intent.putExtra("shopData", shopDataModel)
-                                        Log.d(TAG, "Shop data: $shopDataModel")
-                                        startActivity(intent)
-                                        finish()
-                                    }
-                                })
-                            }
-                            AUTH_ACCESS_FAILED -> {
+                            } else {
                                 Snackbar.make(
-                                    findViewById(android.R.id.content), "Unable to sign you in",
+                                    findViewById(android.R.id.content), "Please update your app",
                                     Snackbar.LENGTH_LONG
                                 ).show()
                             }
-                            else -> {
-                                countDownTimer.start()
-                            }
                         }
-
                     }
 
                 })
+
             } else {
                 countDownTimer.start()
             }

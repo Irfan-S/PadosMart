@@ -21,6 +21,9 @@ val NODE_SHOPS = "shops"
 val NODE_ORDERS = "orders"
 val NODE_USERS = "users"
 val NODE_ACCESS_PERMS = "access_permissions"
+val NODE_APP_VERSION = "app"
+
+val SUB_NODE_VERSION = "version"
 
 val QUERY_ARG_CUSTOMER_ID = "customerID"
 val QUERY_ARG_SHOP_ID = "shopID"
@@ -29,6 +32,7 @@ val QUERY_ARG_CUSTOMER_ONLINE = "customerOnline"
 val QUERY_ARG_SHOP_COUNTER = "shopVisitCount"
 val QUERY_ARG_CITY = "city"
 val QUERY_ARG_SHOP_STATUS = "shopStatus"
+val QUERY_ARG_SHOP_CREATION_DATE = "shopCreationDate"
 
 
 val ORDER_STATUS_NOT_PLACED = -1

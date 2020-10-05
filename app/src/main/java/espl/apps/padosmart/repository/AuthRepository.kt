@@ -14,6 +14,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import espl.apps.padosmart.R
 import espl.apps.padosmart.models.AccessDataModel
+import espl.apps.padosmart.models.AppVersionDataModel
 import espl.apps.padosmart.models.ShopDataModel
 import espl.apps.padosmart.models.UserDataModel
 import espl.apps.padosmart.utils.*
@@ -45,6 +46,19 @@ class AuthRepository(private var context: Context) {
     fun getFirebaseAuthReference(): FirebaseAuth {
         Log.d(TAG, "Returning firebase auth object")
         return mAuth
+    }
+
+    fun getAppVersion(callback: AppVersionCallback) {
+        fireStoreDB.collection(NODE_APP_VERSION).document(SUB_NODE_VERSION).get()
+            .addOnSuccessListener {
+                if (it != null) {
+                    callback.onVersionGet(it.toObject<AppVersionDataModel>()!!)
+                } else {
+                    callback.onVersionGet(AppVersionDataModel())
+                }
+            }.addOnFailureListener {
+            callback.onVersionGet(AppVersionDataModel())
+        }
     }
 
     /**
@@ -225,4 +239,7 @@ class AuthRepository(private var context: Context) {
         fun onFetchComplete(shopDataModel: ShopDataModel?)
     }
 
+    interface AppVersionCallback {
+        fun onVersionGet(appVersionDataModel: AppVersionDataModel)
+    }
 }

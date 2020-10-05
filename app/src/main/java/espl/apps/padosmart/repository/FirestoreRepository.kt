@@ -184,6 +184,35 @@ class FirestoreRepository(private var context: Context) {
             }
     }
 
+    fun fetchNewShops(userCity: String, onShopsFetched: OnShopsFetched, numOfShops: Long) {
+        var resp = ArrayList<ShopDataModel>()
+        Log.d(TAG, "Querying new shops")
+        fireStoreDB.collection(NODE_SHOPS)
+            .whereEqualTo(QUERY_ARG_SHOP_STATUS, SHOP_USER)
+            .whereEqualTo(QUERY_ARG_CITY, userCity)
+            .orderBy(QUERY_ARG_SHOP_CREATION_DATE, Query.Direction.DESCENDING)
+            .limit(numOfShops)
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    //Removing duplicates
+                    if (!resp.contains(document.toObject())) {
+                        resp.add(document.toObject())
+                    }
+
+                }
+                Log.d(
+                    TAG,
+                    "Fetching new shops from repo successful w ${documents.toObjects<ShopDataModel>()}"
+                )
+                //resp = documents.toObjects<ShopDataModel>() as ArrayList<ShopDataModel>
+                onShopsFetched.onSuccess(resp)
+            }.addOnFailureListener {
+                Log.d(TAG, "Failed popular fetching w $it")
+                onShopsFetched.onSuccess(resp)
+            }
+    }
+
     fun getShopDetails(
         shopID: String,
         callback: OnShopFetched
